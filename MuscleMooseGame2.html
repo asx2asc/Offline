@@ -6,6 +6,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Muscle Moose: Sour Apple Rush</title>
 
+  <!-- 1. DOMAIN LOCK & ANTI-PIRACY GUARD -->
+  <script>
+    (function() {
+      const ALLOWED_DOMAIN = "asx2asc.github.io";
+      const currentHost = window.location.hostname;
+      
+      // Halts execution if ran locally (file://), on localhost, or on a stolen domain
+      if (currentHost !== ALLOWED_DOMAIN) {
+          document.documentElement.innerHTML = `
+            <div style="background:#0a0a0a; color:#ff3333; height:100vh; width:100vw; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:sans-serif; text-align:center; padding:20px; box-sizing:border-box; overflow:hidden;">
+              <svg style="width:80px;height:80px;margin-bottom:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+              <h1 style="font-size:2rem; font-weight:900; letter-spacing:2px; margin:0 0 10px 0; text-transform:uppercase;">Unauthorized Host Detected</h1>
+              <p style="color:#aaaaaa; font-size:1rem; max-width:500px; line-height:1.5;">
+                This software is licensed exclusively to run on <strong>${ALLOWED_DOMAIN}</strong>.<br><br>
+                Local execution and unauthorized hosting have been blocked. Please play the game at the official link.
+              </p>
+            </div>
+          `;
+          throw new Error("FATAL: Execution halted due to unauthorized host violation.");
+      }
+    })();
+  </script>
+
+  <!-- 2. ANTI-INSPECTION GUARD -->
+  <script>
+    (function() {
+      // Disable Right-Click
+      document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+      });
+
+      // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U, and macOS equivalents
+      document.addEventListener('keydown', function(e) {
+        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+        
+        if (
+          e.keyCode === 123 || // F12
+          (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) || 
+          (isMac && e.metaKey && e.altKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) || 
+          (e.ctrlKey && e.keyCode === 85) || // Ctrl+U
+          (isMac && e.metaKey && e.keyCode === 85) 
+        ) {
+          e.preventDefault();
+          return false;
+        }
+      });
+    })();
+  </script>
+
   <!-- Intercept and hide the annoying Tailwind/Babel dev warnings -->
   <script>
     const origWarn = console.warn;
@@ -1575,7 +1624,7 @@
           }, 300);
           return () => clearTimeout(timer);
         }
-      }, [assetStatus]);
+      },[assetStatus]);
       return null;
     };
 
@@ -1587,7 +1636,7 @@
       const[showDebug, setShowDebug] = useState(false);
       const [highScores, setHighScores] = useState([]);
       const[showHelp, setShowHelp] = useState(false);
-      const [showSystem, setShowSystem] = useState(false);
+      const[showSystem, setShowSystem] = useState(false);
       
       const [settings, setSettings] = useState({ zoom: true, locomotion: 'run', season: 'summer', musicEnabled: true, musicVolume: 50, trackType: 'classic' });
       const [isVisible, setIsVisible] = useState(typeof document !== 'undefined' ? !document.hidden : true);
