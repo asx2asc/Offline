@@ -84,6 +84,65 @@
     // --- Global Arcade Characters ---
     const CHAR_SET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_! ".split("");
 
+    // =====================================================================
+    // --- SECURE CLOUD DATABASE (Google Sheets) ---
+    // =====================================================================
+    const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx_AVujboTEFJD8wKInRcf9MjfS1lXFsGA9346vqmXFp74KklUh2lzN_G_88hc7u4nk/exec";
+
+    // =====================================================================
+    // --- ENCRYPTED MULTI-LANGUAGE PROFANITY DICTIONARY ---
+    // =====================================================================
+    const ENCODED_3_LETTERS = "WyJDT0MiLCJDT0siLCJDT1giLCJESUsiLCJESUMiLCJESVgiLCJQRU4iLCJQUksiLCJSQUIiLCJQSUMiLCJQQ0giLCJCSVQiLCJCVEUiLCJaT0IiLCJWSVQiLCJQSUsiLCJMVUwiLCJaQUsiLCJIVUkiLCJIVVkiLCJYRVAiLCJDSEwiLCJaQUwiLCJDQVoiLCJNSU4iLCJLVUsiLCJNVUwiLCJUVEkiLCJCTlQiLCJPVEUiLCJMVU4iLCJMQU4iLCJMTkQiLCJDVU4iLCJQVVMiLCJWQUciLCJWR04iLCJXQVAiLCJNVUYiLCJPWCIsIkNITyIsIkNPTiIsIkJVQyIsIlhPWCIsIkNIQSIsIktVVCIsIkZPVCIsIlNLSyIsIlBJWiIsIlBaRCIsIkZJRyIsIkZSRSIsIkZJVCIsIkYxVCIsIlBJTCIsIlBVSyIsIlBLQSIsIlBLRSIsIkNIVSIsIkJITyIsIkpIQSIsIkFTUyIsIkFSUyIsIlNIVCIsIlBPTyIsIkJVTSIsIkNSRCIsIlBFRSIsIlBJUyIsIkFOTyIsIkNVTCIsIk1JRSIsIk1SRCIsIk1FUiIsIktBSyIsIktPVCIsIlNDSCIsIlNSQSIsIkRVUCIsIlNUUiIsIlJPVSIsIlBBUyIsIlNLSSIsIlRBRSIsIlBXRSIsIlRBVCIsIkdORCIsIkZVQyIsIkZVSyIsIkZDSyIsIkZVWCIsIlNFWCIsIlNYWCIsIlNYWSIsIkNVTSIsIkpJWiIsIkpaWiIsIldOSyIsIlNVQyIsIlNVSyIsIkpPRCIsIkZPRCIsIk1BTSIsIlBVTiIsIk5JSyIsIk5JUSIsIkZPVSIsIkJBSSIsIk5FSyIsIldJWCIsIllFQiIsIkpFQiIsIlRSQSIsIlNDTyIsIktOUCIsIlJVViIsIktBTiIsIkpBSyIsIk1VVCIsIkJDSCIsIkhPRSIsIkhPUiIsIlNMVCIsIlNLTiIsIlBSTiIsIlhYWCIsIlBVVCIsIlBUQSIsIlBUTyIsIlpPUiIsIlBFUiIsIlNBTCIsIlBURSIsIkhVUiIsIlNPVyIsIktVUiIsIlNaRSIsIlNVSyIsIlNITCIsIlRSTyIsIk1PQyIsIkxVRCIsIlJBTiIsIkdBUyIsIk1PRiIsIk1GUiIsIkJUUiIsIlNPQiIsIldURiIsIkdPRCIsIkxTRCIsIkhEUCIsIkZEUCIsIkNBQiIsIlBORCIsIkdVRSIsIldFWSIsIlBJTiIsIk5UTSIsIkVOQyIsIlpVVCIsIkNITSIsIkhVUyIsIktMTyIsIkRPTSIsIkdFSyIsIk1VRCIsIkdBRCIsIkxPSCIsIkJMWSIsIkJMRCIsIkJBUyIsIkRSUCIsIlRORyIsIkdBRyIsIkJCTyIsIlVMSyIsIk1BRCIsIkJIRSIsIkhBUiIsIkZBRyIsIkRZSyIsIkdBWSIsIkhPTSIsIkxFUyIsIk1BUiIsIk1SSyIsIlBERyIsIlRBUiIsIkdPVSIsIlBPVCIsIkZMSSIsIkdZTCIsIkdFSSIsIlBJRCIsIkZJTiIsIkZSTyIsIlJJQyIsIkJPRyIsIkJBSyIsIlRCTSIsIkNISyIsIk1FSSIsIk5HQSIsIk5JRyIsIk5HUiIsIktLSyIsIk5aSSIsIkpFVyIsIkpBUCIsIktZUyIsIlRXRyIsIlRXVCJd";
+    const ENCODED_2_LETTERS = "WyJGVSIsIkJKIiwiQUYiLCJNRiIsIkJTIiwiQ1AiLCJEUCIsIktLIiwiS1kiLCJQRCIsIlZEIiwiWEQiLCJTUyIsIlRNIiwiTUMiLCJCQyIsIk1LIiwiQksiLCJQVCIsIkZEIl0=";
+    const BLOCKED_WORDS = JSON.parse(atob(ENCODED_3_LETTERS));
+    const TWO_LETTER_BLOCKS = JSON.parse(atob(ENCODED_2_LETTERS));
+
+    const checkProfanity = (input) => {
+        let normalized = input.toUpperCase()
+            .replace(/0/g, 'O').replace(/1|!/g, 'I').replace(/2/g, 'Z')
+            .replace(/3/g, 'E').replace(/4/g, 'A').replace(/5/g, 'S')
+            .replace(/6/g, 'G').replace(/7/g, 'T').replace(/8/g, 'B').replace(/9/g, 'G'); 
+            
+        if (BLOCKED_WORDS.includes(normalized)) return true;
+        
+        let compressed = normalized.replace(/[ _-]/g, '');
+        if (TWO_LETTER_BLOCKS.includes(compressed)) return true;
+        
+        return false;
+    };
+
+    const loadScoresFromCloud = async () => {
+        try {
+            // Append a dynamic timestamp to forcefully bypass aggressive browser caching
+            const fetchUrl = `${GOOGLE_WEB_APP_URL}?action=load&t=${Date.now()}`;
+            
+            // Explicitly instruct the fetch API to follow Google's 302 redirects
+            const res = await fetch(fetchUrl, { redirect: 'follow' });
+            if (!res.ok) throw new Error('Network response not ok');
+            
+            const data = await res.json();
+            
+            // Synchronize the local fallback cache with the fresh cloud data
+            if (data && Array.isArray(data)) {
+                localStorage.setItem('mm_highscores', JSON.stringify(data));
+            }
+            
+            return data ||[];
+        } catch(e) {
+            console.warn("Cloud connection failed (Check Google Script Permissions). Loading local cache proxy:", e);
+            return JSON.parse(localStorage.getItem('mm_highscores')) ||[];
+        }
+    };
+
+    const saveScoresToCloud = async (initials, finalScore) => {
+        try {
+            const url = `${GOOGLE_WEB_APP_URL}?action=add&name=${encodeURIComponent(initials)}&score=${finalScore}`;
+            await fetch(url, { mode: 'no-cors' }); 
+        } catch(e) {
+            console.warn("Failed to save cloud score:", e);
+        }
+    };
+
     // --- Error Boundary ---
     class ErrorBoundary extends Component {
       constructor(props) {
@@ -200,7 +259,6 @@
 
         const tType = globalUniforms.uTrackType.value;
 
-        // Multiply by the animated scalar to smoothly unbend the CPU math precisely with the GPU
         return { 
             x: curveX * tType, 
             y: curveY * tType, 
@@ -216,8 +274,8 @@
       blueRasp: "https://musclemoose.co.uk/wp-content/uploads/2025/10/MJ-Blue-Rasp-440ml-1024x1024-1.png",
       berry: "https://musclemoose.co.uk/wp-content/uploads/2025/10/MJ-Berry-440ml-1024x1024-1.png",
       flapjack: "https://musclemoose.co.uk/wp-content/uploads/2019/09/Mixed-Berry-Protein-Flapjack.png",
-      // Reliable public domain HTTPS stream to bypass Android's content:// relative path block
-      musicBase: "https://raw.githubusercontent.com/asx2asc/Offline/refs/heads/main/Background.mp3"    };
+      musicBase: "https://raw.githubusercontent.com/asx2asc/Offline/refs/heads/main/Background.mp3"
+    };
 
     // --- GLOBAL PROCEDURAL ASSET FACTORIES ---
 
@@ -748,7 +806,19 @@
               return; 
           }
           
+          // CRITICAL FIX: Smoothly recover the deer's posture from death states.
           root.rotation.x = THREE.MathUtils.lerp(root.rotation.x, 0, 10 * delta); 
+          
+          // The procedural deer is modeled facing +Z. It requires exactly Math.PI to face forward (-Z).
+          // We calculate the shortest angular path to Math.PI to instantly prevent "helicopter unwinding" 
+          // if the deer accumulated massive rotation values while spinning inside an acid pit.
+          let dy = Math.PI - root.rotation.y;
+          while (dy > Math.PI) dy -= Math.PI * 2;
+          while (dy < -Math.PI) dy += Math.PI * 2;
+          root.rotation.y += dy * 10 * delta;
+          
+          root.rotation.z = THREE.MathUtils.lerp(root.rotation.z, 0, 10 * delta); 
+
           const runSpeed = (speedRef?.current || BASE_SPEED) * 0.6;
           const t = state.clock.elapsedTime * runSpeed;
 
@@ -816,7 +886,7 @@
     const HighPolyTnt = () => {
         initTntAssets();
         const rivetPositions = useMemo(() => {
-            const pos = [];[-0.725, 0.725].forEach(x => {[-0.725, 0.725].forEach(z => { [-0.45, 0.45].forEach(y => { pos.push([x, y, z]); }); }); });
+            const pos = [];[-0.725, 0.725].forEach(x => {[-0.725, 0.725].forEach(z => {[-0.45, 0.45].forEach(y => { pos.push([x, y, z]); }); }); });
             return pos;
         },[]);
 
@@ -852,7 +922,7 @@
     const HighPolyPit = () => {
         initAcidPitAssets();
         const elements = useMemo(() => {
-            const arr = [];
+            const arr =[];
             for(let i=0; i<36; i++) {
                 const angle = (i / 36) * Math.PI * 2;
                 const r = 1.1 + Math.random() * 0.1; 
@@ -865,7 +935,7 @@
                 });
             }
             return arr;
-        }, []);
+        },[]);
 
         return (
             <group>
@@ -889,7 +959,7 @@
 
     const Item = ({ item, assets }) => {
       const groupRef = useRef(null);
-      useEffect(() => { Object.values(assets).forEach(t => { if (t && t.isTexture) t.colorSpace = THREE.SRGBColorSpace; }); }, [assets]);
+      useEffect(() => { Object.values(assets).forEach(t => { if (t && t.isTexture) t.colorSpace = THREE.SRGBColorSpace; }); },[assets]);
 
       useFrame((state, delta) => {
         const safeDelta = Math.min(delta, 0.1);
@@ -1341,7 +1411,7 @@
         };
         frameId = requestAnimationFrame(updateUI);
         return () => cancelAnimationFrame(frameId);
-      }, [stateRef]);
+      },[stateRef]);
 
       return (
         <div className="absolute inset-0 pointer-events-none px-2 py-4 md:p-6 flex justify-between items-start z-10 bg-gradient-to-b from-black/60 to-transparent h-32">
@@ -1511,20 +1581,20 @@
 
     function App() {
       const [gameState, setGameState] = useState("start");
-      const[assetStatus, setAssetStatus] = useState("verifying");
+      const [assetStatus, setAssetStatus] = useState("verifying");
       const[loadedAssets, setLoadedAssets] = useState({});
       const [debugLogs, setDebugLogs] = useState([]);
-      const [showDebug, setShowDebug] = useState(false);
+      const[showDebug, setShowDebug] = useState(false);
       const [highScores, setHighScores] = useState([]);
       const[showHelp, setShowHelp] = useState(false);
       const [showSystem, setShowSystem] = useState(false);
       
-      const[settings, setSettings] = useState({ zoom: true, locomotion: 'run', season: 'summer', musicEnabled: true, musicVolume: 50, trackType: 'classic' });
-      
+      const [settings, setSettings] = useState({ zoom: true, locomotion: 'run', season: 'summer', musicEnabled: true, musicVolume: 50, trackType: 'classic' });
       const [isVisible, setIsVisible] = useState(typeof document !== 'undefined' ? !document.hidden : true);
 
       const [nameChars, setNameChars] = useState([0, 0, 0]); 
-      const[activeCharIdx, setActiveCharIdx] = useState(0);
+      const [activeCharIdx, setActiveCharIdx] = useState(0);
+      const[nameError, setNameError] = useState("");
 
       const isTrapActive = useRef(false);
 
@@ -1537,12 +1607,14 @@
       },[]);
 
       useEffect(() => {
+        const initScores = async () => {
+            const cloudScores = await loadScoresFromCloud();
+            const migrated = cloudScores.map(s => typeof s === 'number' ? { name: 'MOO', score: s } : s);
+            setHighScores(migrated);
+        };
+        initScores();
+
         try {
-            const storedScores = JSON.parse(localStorage.getItem('mm_highscores'));
-            if (storedScores && Array.isArray(storedScores)) {
-                const migrated = storedScores.map(s => typeof s === 'number' ? { name: 'MOO', score: s } : s);
-                setHighScores(migrated);
-            }
             const storedSettings = JSON.parse(localStorage.getItem('mm_settings'));
             if (storedSettings) setSettings(prev => ({...prev, ...storedSettings}));
         } catch(e) { console.error("Failed to load local data", e); }
@@ -1550,7 +1622,7 @@
 
       useEffect(() => {
         globalUniforms.uTrackTypeTarget.value = settings.trackType === 'classic' ? 0.0 : 1.0;
-      }, [settings.trackType]);
+      },[settings.trackType]);
 
       useEffect(() => {
         const handlePopState = () => { isTrapActive.current = false; if (gameState === 'playing') setGameState('paused'); };
@@ -1724,6 +1796,7 @@
           if (finalScore > 0 && (isBoardNotFull || isBetterThanWorst)) {
               setNameChars([0,0,0]);
               setActiveCharIdx(0);
+              setNameError("");
               isTrapActive.current = false;
               setGameState("name_entry");
           } else {
@@ -1737,6 +1810,7 @@
 
         const handleKeyDown = (e) => {
           if (gameState === "name_entry") {
+              setNameError(""); 
               if (e.key === "ArrowUp" || e.key === "w") setNameChars(prev => { const n=[...prev]; n[activeCharIdx] = (n[activeCharIdx] - 1 + CHAR_SET.length) % CHAR_SET.length; return n; });
               else if (e.key === "ArrowDown" || e.key === "s") setNameChars(prev => { const n=[...prev]; n[activeCharIdx] = (n[activeCharIdx] + 1 + CHAR_SET.length) % CHAR_SET.length; return n; });
               else if (e.key === "ArrowLeft" || e.key === "a") setActiveCharIdx(prev => Math.max(0, prev - 1));
@@ -1825,7 +1899,6 @@
                   <Scenery speedRef={speedRef} gameState={gameState} />
                   <WeatherSystem season={settings.season} speedRef={speedRef} gameState={gameState} />
 
-                  {/* Persistently mount Player and Game Logic to allow dynamic GPU tracking across all UI states */}
                   <PlayerWrapper gameState={gameState} stateRef={stateRef} speedRef={speedRef} isZoomed={settings.zoom} locomotion={settings.locomotion} />
                   
                   {(gameState === "playing" || gameState === "paused") && (
@@ -1959,7 +2032,6 @@
                   <div className="w-full bg-black/50 border border-neutral-800 rounded-xl p-4 flex flex-col items-center mb-4">
                     <div className="text-xs text-neutral-500 uppercase font-bold tracking-widest mb-3">Gameplay Options</div>
                     
-                    {/* Integrated Map Style Toggle */}
                     <button onClick={() => updateSetting('trackType', settings.trackType === 'classic' ? 'winding' : 'classic')} className="w-full flex items-center justify-between px-4 py-3 bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700 rounded-lg font-bold uppercase tracking-wider transition-colors text-sm mb-2">
                       <div className="flex items-center gap-2"><Map className="w-4 h-4 text-[#39ff14]" /> Track Style</div>
                       <span className="text-[#39ff14]">{settings.trackType === 'classic' ? 'Classic' : 'Winding'}</span>
@@ -1987,13 +2059,7 @@
                   </div>
 
                   <div className="w-full bg-black/50 border border-neutral-800 rounded-xl p-4 flex flex-col items-center">
-                    <div className="text-xs text-neutral-500 uppercase font-bold tracking-widest mb-3">Data & Developer Options</div>
-                    <button onClick={() => {
-                        if(window.confirm("Are you sure you want to clear your high scores?")) {
-                            localStorage.removeItem('mm_highscores');
-                            setHighScores([]);
-                        }
-                    }} className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-900/50 hover:bg-red-900/80 text-red-200 border border-red-800 rounded-lg font-bold uppercase tracking-wider transition-colors text-sm mb-2"><Trash2 className="w-4 h-4" /> Clear High Scores</button>
+                    <div className="text-xs text-neutral-500 uppercase font-bold tracking-widest mb-3">Developer Options</div>
                     <button onClick={() => { setShowDebug(!showDebug); setShowSystem(false); }} className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700 rounded-lg font-bold uppercase tracking-wider transition-colors text-sm"><Bug className="w-4 h-4 text-[#39ff14]" /> Open Debug Console</button>
                   </div>
                 </div>
@@ -2010,29 +2076,46 @@
                 <div className="bg-neutral-900/90 border border-neutral-700 rounded-3xl p-6 md:p-10 mb-6 w-full max-w-sm shadow-2xl backdrop-blur-md flex flex-col items-center">
                   <p className="text-neutral-400 uppercase tracking-widest font-bold text-xs md:text-sm mb-6 flex items-center gap-2"><Trophy className="w-4 h-4"/> Enter Initials</p>
                   
+                  {nameError && (
+                    <div className="w-full bg-red-950/80 border border-red-500/50 rounded-lg p-3 mb-6 flex items-center justify-center gap-2 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.5)]">
+                        <ShieldAlert className="w-5 h-5 text-red-500 shrink-0" />
+                        <span className="text-red-400 text-xs md:text-sm font-bold uppercase tracking-wider">{nameError}</span>
+                    </div>
+                  )}
+
                   <div className="flex gap-2 md:gap-4 mb-10">
                     {[0, 1, 2].map(idx => (
                       <div key={idx} className={`flex flex-col items-center transition-transform duration-200 cursor-pointer ${activeCharIdx === idx ? 'scale-110' : 'opacity-40 scale-95 hover:opacity-80'}`} onClick={() => setActiveCharIdx(idx)}>
-                        <button onClick={(e) => { e.stopPropagation(); setNameChars(prev => { const n=[...prev]; n[idx] = (n[idx] - 1 + CHAR_SET.length) % CHAR_SET.length; return n; }); }} className="p-2 md:p-3 text-neutral-500 hover:text-white transition-colors bg-black/30 rounded-t-lg"><ChevronUp className="w-8 h-8 md:w-10 md:h-10"/></button>
+                        <button onClick={(e) => { e.stopPropagation(); setNameError(""); setNameChars(prev => { const n=[...prev]; n[idx] = (n[idx] - 1 + CHAR_SET.length) % CHAR_SET.length; return n; }); }} className="p-2 md:p-3 text-neutral-500 hover:text-white transition-colors bg-black/30 rounded-t-lg"><ChevronUp className="w-8 h-8 md:w-10 md:h-10"/></button>
                         <div className={`text-5xl md:text-6xl font-black font-mono w-16 h-20 md:w-20 md:h-24 flex items-center justify-center border-x border-black bg-black shadow-inner transition-colors ${activeCharIdx === idx ? 'text-[#39ff14] border-b-4 border-b-[#39ff14] shadow-[inset_0_0_20px_rgba(57,255,20,0.2)]' : 'text-white border-b-4 border-b-neutral-800'}`}>
                           {CHAR_SET[nameChars[idx]]}
                         </div>
-                        <button onClick={(e) => { e.stopPropagation(); setNameChars(prev => { const n=[...prev]; n[idx] = (n[idx] + 1 + CHAR_SET.length) % CHAR_SET.length; return n; }); }} className="p-2 md:p-3 text-neutral-500 hover:text-white transition-colors bg-black/30 rounded-b-lg"><ChevronDown className="w-8 h-8 md:w-10 md:h-10"/></button>
+                        <button onClick={(e) => { e.stopPropagation(); setNameError(""); setNameChars(prev => { const n=[...prev]; n[idx] = (n[idx] + 1 + CHAR_SET.length) % CHAR_SET.length; return n; }); }} className="p-2 md:p-3 text-neutral-500 hover:text-white transition-colors bg-black/30 rounded-b-lg"><ChevronDown className="w-8 h-8 md:w-10 md:h-10"/></button>
                       </div>
                     ))}
                   </div>
                   
-                  <button id="save-score-btn" onClick={() => {
+                  <button id="save-score-btn" onClick={async () => {
                       const finalScore = Math.floor(stateRef.current.score);
                       const initials = nameChars.map(idx => CHAR_SET[idx]).join("");
+                      
+                      if (checkProfanity(initials)) {
+                          setNameError("Name not permitted. Try again.");
+                          return; 
+                      }
+
                       const newScores =[...highScores, { name: initials, score: finalScore }]
                                           .sort((a,b) => b.score - a.score)
                                           .slice(0, 5);
-                      try { 
-                          setHighScores(newScores); 
-                          localStorage.setItem('mm_highscores', JSON.stringify(newScores)); 
-                      } catch(e){}
+                      
+                      setHighScores(newScores); 
+                      
+                      try { localStorage.setItem('mm_highscores', JSON.stringify(newScores)); } catch(e){}
+                      
                       setGameState("gameover");
+                      
+                      await saveScoresToCloud(initials, finalScore);
+
                   }} className="group relative w-full px-6 py-4 bg-[#39ff14] text-black font-black uppercase tracking-widest text-lg md:text-xl rounded-full overflow-hidden hover:scale-105 transition-transform shadow-[0_0_20px_rgba(57,255,20,0.4)]">
                     <div className="absolute inset-0 bg-white/30 translate-y-full group-hover:translate-y-0 transition-transform" />
                     <span className="relative flex items-center justify-center gap-3">Save Score</span>
