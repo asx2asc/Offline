@@ -8,21 +8,20 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vue.js -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <!-- Google Fonts: Cormorant Garamond (Gothic/Elegant) & Montserrat (Premium Sans) -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
     
     <style>
         /* CSS Variables for Premium Gothic Palette */
         :root {
-            --abyss: #0a050c;        /* Near black with a hint of purple */
-            --velvet: #160a18;       /* Deepest plum */
-            --blood-wine: #38121f;   /* Dark crimson shadow */
+            --abyss: #0a050c;
+            --velvet: #160a18;
+            --blood-wine: #38121f;
             --tarnished-gold: #c5a059;
             --gold-light: #e8ce95;
             --parchment: #e6e1db;
         }
 
-        /* Base & Texture overlay for a matte, high-end paper feel */
         body {
             background-color: var(--abyss) !important;
             color: var(--parchment);
@@ -32,7 +31,6 @@
             position: relative;
         }
         
-        /* CSS Noise Texture for physical luxury feel */
         body::before {
             content: "";
             position: fixed;
@@ -46,7 +44,6 @@
         .text-gold { color: var(--tarnished-gold); }
         .border-gold { border-color: var(--tarnished-gold); }
 
-        /* Premium Input Fields - Sharp, stark, elegant */
         .premium-input {
             width: 100%;
             background: rgba(0, 0, 0, 0.4);
@@ -57,7 +54,7 @@
             font-size: 0.85rem;
             letter-spacing: 0.05em;
             transition: all 0.4s ease;
-            border-radius: 0; /* Sharp corners for Gothic style */
+            border-radius: 0;
         }
         .premium-input:focus {
             outline: none;
@@ -68,7 +65,14 @@
         .premium-input::placeholder { color: #5a4b5c; letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.75rem; }
         .premium-input:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        /* Premium Ghost Buttons */
+        select.premium-input {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23c5a059'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1.25rem center;
+            background-size: 1.2em;
+        }
+
         .btn-gold {
             background: transparent;
             color: var(--tarnished-gold);
@@ -81,8 +85,13 @@
             font-size: 0.85rem;
             transition: all 0.5s ease;
             position: relative;
+            z-index: 1; /* FIX: Establishes localized stacking context preventing background disappearance */
             overflow: hidden;
             border-radius: 0;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.75rem;
         }
         .btn-gold::before {
             content: '';
@@ -104,7 +113,6 @@
         }
         .btn-gold:disabled { opacity: 0.3; border-color: #5a4b5c; color: #5a4b5c; cursor: not-allowed; }
 
-        /* Gothic Stationery Card Effect (Double Border) */
         .stationery-card {
             background-color: var(--velvet);
             border: 1px solid var(--tarnished-gold);
@@ -114,7 +122,6 @@
             position: relative;
         }
 
-        /* SVG Gothic Divider */
         .gothic-divider {
             width: 100%;
             height: 20px;
@@ -124,9 +131,27 @@
             margin: 1.5rem 0;
         }
 
-        /* Vue Transitions */
+        .custom-checkbox {
+            appearance: none;
+            width: 0.85rem; height: 0.85rem;
+            border: 1px solid var(--tarnished-gold);
+            background: rgba(0,0,0,0.5);
+            cursor: pointer; 
+            transition: all 0.4s ease;
+            transform: rotate(45deg);
+            flex-shrink: 0;
+            position: relative;
+        }
+        .custom-checkbox:checked { 
+            background: var(--tarnished-gold); 
+            box-shadow: 0 0 15px rgba(197, 160, 89, 0.5);
+        }
+
         .fade-enter-active, .fade-leave-active { transition: opacity 0.5s ease, transform 0.5s ease; }
         .fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(-10px); }
+        
+        .toast-enter-active, .toast-leave-active { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .toast-enter-from, .toast-leave-to { opacity: 0; transform: translateY(100%) translateX(-50%); }
     </style>
 </head>
 <body class="bg-[#0a050c]">
@@ -168,7 +193,7 @@
                 <div class="gothic-divider w-1/2 mx-auto"></div>
                 <div class="mt-6 inline-block text-center max-w-lg">
                     <p class="text-[#a999a9] text-xs leading-loose tracking-widest uppercase">
-                        This cipher grants you authority to dictate attendance and dietary requirements for your entire party. Pray, complete the responses below.
+                        This cipher grants you authority to dictate attendance and dietary requirements for your entire party. Pray, complete the responses for each event below.
                     </p>
                 </div>
                 <p class="text-[#8b2e3b] text-xs tracking-widest uppercase mt-8 font-semibold" v-if="isLocked">The portal is sealed. Selections are absolute.</p>
@@ -177,61 +202,63 @@
 
             <!-- Guest Iteration -->
             <div v-for="guest in currentHousehold" :key="guest.id" class="stationery-card p-8 md:p-10 mb-8">
-                <h3 class="font-gothic text-3xl text-gold mb-2 text-center">{{ guest.name }}</h3>
+                <h3 class="font-gothic text-4xl text-gold mb-2 text-center">{{ guest.name }}</h3>
                 <div class="gothic-divider mb-8"></div>
                 
-                <!-- Tappable RSVP Cards (Sharp Gothic aesthetic) -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                    <label class="relative" :class="isLocked ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'">
-                        <input type="radio" :name="'attending-'+guest.id" :value="true" v-model="guest.isAttending" :disabled="isLocked" class="peer sr-only">
-                        <div class="p-5 border border-[#3c2441] bg-black/40 peer-checked:border-gold peer-checked:bg-[#c5a059]/10 transition-all duration-500 text-center hover:bg-[#3c2441]/30">
-                            <span class="block text-xs font-semibold uppercase tracking-[0.2em] text-[#7a6b7c] peer-checked:text-gold">Accepts with Pleasure</span>
-                        </div>
-                    </label>
-                    <label class="relative" :class="isLocked ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'">
-                        <input type="radio" :name="'attending-'+guest.id" :value="false" v-model="guest.isAttending" :disabled="isLocked" class="peer sr-only">
-                        <div class="p-5 border border-[#3c2441] bg-black/40 peer-checked:border-[#7a6b7c] peer-checked:bg-white/5 transition-all duration-500 text-center hover:bg-[#3c2441]/30">
-                            <span class="block text-xs font-semibold uppercase tracking-[0.2em] text-[#7a6b7c] peer-checked:text-parchment">Declines with Regret</span>
-                        </div>
-                    </label>
-                </div>
+                <!-- Nested Event Iteration -->
+                <div v-for="eventId in guest.invitations" :key="eventId" class="mb-12 border-b border-[#3c2441] pb-10 last:border-0 last:pb-0">
+                    <h4 class="font-gothic text-2xl text-parchment mb-6 text-center italic">{{ getEventName(eventId) }}</h4>
 
-                <!-- Dietary Requirements -->
-                <div class="mb-6">
-                    <label class="block text-[0.65rem] font-semibold text-gold uppercase tracking-[0.2em] mb-3">Dietary Afflictions & Allergies</label>
-                    <textarea v-model="guest.allergies" :disabled="isLocked" rows="2" placeholder="Specify any severe restrictions..." class="premium-input resize-none"></textarea>
-                </div>
+                    <!-- Tappable RSVP Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                        <label class="relative" :class="isLocked ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'">
+                            <input type="radio" :name="'attending-'+guest.id+'-'+eventId" :value="true" v-model="guest.rsvps[eventId].isAttending" :disabled="isLocked" class="peer sr-only">
+                            <div class="p-5 border border-[#3c2441] bg-black/40 peer-checked:border-gold peer-checked:bg-[#c5a059]/10 transition-all duration-500 text-center hover:bg-[#3c2441]/30">
+                                <span class="block text-xs font-semibold uppercase tracking-[0.2em] text-[#7a6b7c] peer-checked:text-gold">Accepts with Pleasure</span>
+                            </div>
+                        </label>
+                        <label class="relative" :class="isLocked ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'">
+                            <input type="radio" :name="'attending-'+guest.id+'-'+eventId" :value="false" v-model="guest.rsvps[eventId].isAttending" :disabled="isLocked" class="peer sr-only">
+                            <div class="p-5 border border-[#3c2441] bg-black/40 peer-checked:border-[#7a6b7c] peer-checked:bg-white/5 transition-all duration-500 text-center hover:bg-[#3c2441]/30">
+                                <span class="block text-xs font-semibold uppercase tracking-[0.2em] text-[#7a6b7c] peer-checked:text-parchment">Declines with Regret</span>
+                            </div>
+                        </label>
+                    </div>
 
-                <!-- Meal Selection (Tarot Card Aesthetic) -->
-                <div :class="guest.isAttending === true ? 'grid-rows-[1fr] opacity-100 mt-8' : 'grid-rows-[0fr] opacity-0 mt-0'" class="grid transition-all duration-700 ease-in-out">
-                    <div class="overflow-hidden">
-                        <div class="bg-black/40 p-6 border border-[#3c2441]">
-                            <label class="block text-[0.65rem] font-semibold text-gold uppercase tracking-[0.2em] mb-4 text-center border-b border-[#3c2441] pb-2">Select Your Offering</label>
-                            
-                            <div class="grid grid-cols-1 gap-4">
-                                <!-- Interactive Menu Cards without OS Select Dropdowns -->
-                                <label v-for="item in menu" :key="item.id" class="relative group" :class="isLocked ? 'cursor-not-allowed' : 'cursor-pointer'">
-                                    <input type="radio" :name="'meal-'+guest.id" :value="item.id" v-model="guest.mealId" :disabled="isLocked" class="peer sr-only">
-                                    <div class="p-6 border border-[#3c2441] bg-black/20 peer-checked:border-gold peer-checked:bg-[#c5a059]/10 transition-all duration-500 hover:bg-[#3c2441]/20 flex flex-col items-center text-center">
-                                        <div class="flex items-center gap-3 mb-3">
-                                            <h4 class="font-gothic text-2xl text-parchment group-hover:text-gold peer-checked:text-gold transition-colors duration-300">{{ item.name }}</h4>
-                                            <span v-if="item.tags" class="border border-[#5a4b5c] text-[0.55rem] px-2 py-1 tracking-widest uppercase text-[#a999a9] peer-checked:border-gold">{{ item.tags }}</span>
+                    <!-- Meal Selection (Tarot Card Aesthetic) -->
+                    <div :class="guest.rsvps[eventId].isAttending === true ? 'grid-rows-[1fr] opacity-100 mt-8' : 'grid-rows-[0fr] opacity-0 mt-0'" class="grid transition-all duration-700 ease-in-out">
+                        <div class="overflow-hidden">
+                            <div class="bg-black/40 p-6 border border-[#3c2441]">
+                                <label class="block text-[0.65rem] font-semibold text-gold uppercase tracking-[0.2em] mb-4 text-center border-b border-[#3c2441] pb-2">Select Your Offering</label>
+                                
+                                <div class="grid grid-cols-1 gap-4">
+                                    <label v-for="item in getMenuForEvent(eventId)" :key="item.id" class="relative group" :class="isLocked ? 'cursor-not-allowed' : 'cursor-pointer'">
+                                        <input type="radio" :name="'meal-'+guest.id+'-'+eventId" :value="item.id" v-model="guest.rsvps[eventId].mealId" :disabled="isLocked" class="peer sr-only">
+                                        <div class="p-6 border border-[#3c2441] bg-black/20 peer-checked:border-gold peer-checked:bg-[#c5a059]/10 transition-all duration-500 hover:bg-[#3c2441]/20 flex flex-col items-center text-center">
+                                            <div class="flex items-center gap-3 mb-3">
+                                                <h4 class="font-gothic text-2xl text-parchment group-hover:text-gold peer-checked:text-gold transition-colors duration-300">{{ item.name }}</h4>
+                                                <span v-if="item.tags" class="border border-[#5a4b5c] text-[0.55rem] px-2 py-1 tracking-widest uppercase text-[#a999a9] peer-checked:border-gold">{{ item.tags }}</span>
+                                            </div>
+                                            <p class="text-sm text-[#a999a9] font-gothic italic tracking-wide leading-relaxed">{{ item.description }}</p>
                                         </div>
-                                        <p class="text-sm text-[#a999a9] font-gothic italic tracking-wide leading-relaxed">{{ item.description }}</p>
-                                    </div>
-                                </label>
+                                    </label>
+                                    <p v-if="getMenuForEvent(eventId).length === 0" class="text-center text-[#7a6b7c] text-xs tracking-widest uppercase py-4">No offerings curated for this event.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
+                </div> <!-- End Event Loop -->
+
+                <!-- Global Dietary Requirements -->
+                <div class="mt-8 bg-black/40 p-6 border border-[#3c2441]">
+                    <label class="block text-[0.65rem] font-semibold text-gold uppercase tracking-[0.2em] mb-3">Global Dietary Afflictions</label>
+                    <textarea v-model="guest.allergies" :disabled="isLocked" rows="2" placeholder="Specify any severe restrictions or allergies applying to all events..." class="premium-input resize-none"></textarea>
                 </div>
-            </div>
+            </div> <!-- End Guest Loop -->
 
             <!-- Submit Action -->
             <div class="flex flex-col items-center mt-12 mb-20">
                 <button @click="saveRSVP" :disabled="isLocked" class="btn-gold min-w-[250px]">Seal Our Fate</button>
-                <transition name="fade">
-                    <p v-if="saveMessage" class="text-gold text-xs tracking-widest uppercase mt-6 font-medium">{{ saveMessage }}</p>
-                </transition>
             </div>
         </div>
 
@@ -244,7 +271,6 @@
             <div class="space-y-6">
                 <input v-model="adminEmail" type="email" placeholder="Email Address" class="premium-input" />
                 <input v-model="adminPassword" type="password" placeholder="Password" @keyup.enter="loginAdmin" class="premium-input" />
-                <p v-if="loginError" class="text-[#8b2e3b] text-xs font-medium text-center uppercase tracking-widest">{{ loginError }}</p>
                 <button @click="loginAdmin" class="btn-gold w-full mt-2">Enter Sanctum</button>
             </div>
         </div>
@@ -254,44 +280,43 @@
             
             <!-- Dashboard Navigation -->
             <nav class="flex flex-wrap gap-2 md:gap-8 mb-10 border-b border-[#3c2441] pb-4 justify-center">
-                <button v-for="tab in ['analytics', 'guests', 'menu', 'settings']" :key="tab" 
+                <button v-for="tab in ['analytics', 'guests', 'menu', 'events_settings', 'dispatch']" :key="tab" 
                         @click="adminTab = tab" 
                         :class="adminTab === tab ? 'text-gold border-b border-gold' : 'text-[#7a6b7c] hover:text-parchment'" 
                         class="px-2 py-2 text-[0.7rem] font-semibold uppercase tracking-[0.2em] transition-colors duration-500">
-                    {{ tab }}
+                    {{ tab.replace('_', ' & ') }}
                 </button>
             </nav>
 
             <!-- TAB: Analytics -->
             <div v-if="adminTab === 'analytics'" class="space-y-8 animate-fade-in">
-                <!-- KPI Cards -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="stationery-card p-6 text-center">
                         <p class="text-[#7a6b7c] text-[0.65rem] font-semibold uppercase tracking-[0.2em] mb-2">Total Souls</p>
                         <p class="text-4xl font-gothic text-parchment">{{ guests.length }}</p>
                     </div>
                     <div class="stationery-card p-6 text-center">
-                        <p class="text-gold text-[0.65rem] font-semibold uppercase tracking-[0.2em] mb-2">Attending</p>
+                        <p class="text-gold text-[0.65rem] font-semibold uppercase tracking-[0.2em] mb-2">Total Acceptances</p>
                         <p class="text-4xl font-gothic text-parchment">{{ attendingCount }}</p>
+                        <p class="text-[0.55rem] text-[#7a6b7c] uppercase mt-1">(Across all events)</p>
                     </div>
                     <div class="stationery-card p-6 text-center">
-                        <p class="text-[#8b2e3b] text-[0.65rem] font-semibold uppercase tracking-[0.2em] mb-2">Declined</p>
+                        <p class="text-[#8b2e3b] text-[0.65rem] font-semibold uppercase tracking-[0.2em] mb-2">Total Declines</p>
                         <p class="text-4xl font-gothic text-parchment">{{ declinedCount }}</p>
                     </div>
                     <div class="stationery-card p-6 text-center">
-                        <p class="text-[#7a6b7c] text-[0.65rem] font-semibold uppercase tracking-[0.2em] mb-2">Tribute (Cost)</p>
+                        <p class="text-[#7a6b7c] text-[0.65rem] font-semibold uppercase tracking-[0.2em] mb-2">Grand Tribute</p>
                         <p class="text-3xl font-gothic text-gold mt-1">£{{ grandTotalCost.toLocaleString('en-GB', {minimumFractionDigits: 2}) }}</p>
                     </div>
                 </div>
 
-                <!-- Sub-sections -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <!-- Menu Breakdown -->
                     <div class="stationery-card p-8">
                         <h3 class="font-gothic text-2xl text-gold mb-6 text-center">Catering Ledger</h3>
                         <ul class="space-y-4">
                             <li v-for="(count, mealId) in mealCounts" :key="mealId" class="flex justify-between items-center border-b border-[#3c2441] pb-3">
-                                <span class="text-sm text-parchment font-gothic tracking-wider">{{ getMenuName(mealId) }}</span>
+                                <span class="text-sm text-parchment font-gothic tracking-wider">{{ getMenuName(mealId) }} <span class="text-[0.6rem] text-[#7a6b7c] uppercase block">{{ getEventNameForMenu(mealId) }}</span></span>
                                 <span class="text-gold text-sm font-bold">{{ count }}</span>
                             </li>
                         </ul>
@@ -321,22 +346,23 @@
                                 <tr>
                                     <th class="p-5 font-semibold">Name</th>
                                     <th class="p-5 font-semibold">Cipher</th>
-                                    <th class="p-5 font-semibold">Status</th>
-                                    <th class="p-5 font-semibold">Offering</th>
+                                    <th class="p-5 font-semibold">Invitations / Status</th>
                                     <th class="p-5 font-semibold">Tribute</th>
                                 </tr>
                             </thead>
                             <tbody class="text-sm text-parchment divide-y divide-[#3c2441]">
                                 <tr v-for="g in guests" :key="g.id" class="hover:bg-white/[0.02] transition-colors duration-300">
-                                    <td class="p-5 font-gothic text-lg tracking-wide">{{ g.name }}</td>
-                                    <td class="p-5 font-mono text-xs text-[#a999a9]">{{ g.householdCode }}</td>
-                                    <td class="p-5 text-xs uppercase tracking-widest">
-                                        <span v-if="g.isAttending === true" class="text-gold">Attending</span>
-                                        <span v-else-if="g.isAttending === false" class="text-[#8b2e3b]">Declined</span>
-                                        <span v-else class="text-[#7a6b7c]">Pending</span>
+                                    <td class="p-5 font-gothic text-lg tracking-wide align-top">{{ g.name }}</td>
+                                    <td class="p-5 font-mono text-xs text-[#a999a9] align-top">{{ g.householdCode }}</td>
+                                    <td class="p-5 align-top">
+                                        <div v-for="evtId in g.invitations" :key="evtId" class="mb-2 last:mb-0 pb-2 border-b border-[#3c2441] last:border-0">
+                                            <span class="text-xs text-[#a999a9] uppercase tracking-widest block mb-1">{{ getEventName(evtId) }}</span>
+                                            <span v-if="g.rsvps[evtId]?.isAttending === true" class="text-gold text-xs uppercase tracking-widest">Attending ({{ getMenuName(g.rsvps[evtId].mealId) }})</span>
+                                            <span v-else-if="g.rsvps[evtId]?.isAttending === false" class="text-[#8b2e3b] text-xs uppercase tracking-widest">Declined</span>
+                                            <span v-else class="text-[#7a6b7c] text-xs uppercase tracking-widest">Pending</span>
+                                        </div>
                                     </td>
-                                    <td class="p-5 font-gothic tracking-wide">{{ g.isAttending ? getMenuName(g.mealId) : '-' }}</td>
-                                    <td class="p-5 text-gold font-medium">{{ g.isAttending && g.mealId ? '£' + getMealCost(g.mealId).toFixed(2) : '-' }}</td>
+                                    <td class="p-5 text-gold font-medium align-top">£{{ getGuestTotalCost(g).toFixed(2) }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -349,15 +375,32 @@
                 <div class="stationery-card p-8 md:p-12">
                     <h3 class="font-gothic text-2xl text-gold mb-2">Summon Souls (Bulk Import)</h3>
                     <p class="text-xs text-[#7a6b7c] tracking-widest uppercase mb-6">Format: <span class="text-gold">CIPHER, Full Name</span></p>
+                    
+                    <label class="block text-[0.65rem] font-semibold text-gold uppercase tracking-[0.2em] mb-3">Grant Access To Events:</label>
+                    <div class="flex flex-wrap gap-6 mb-6">
+                        <label v-for="evt in settings.events" :key="evt.id" class="flex items-center gap-3 cursor-pointer text-sm text-parchment group">
+                            <input type="checkbox" :value="evt.id" v-model="targetEventsImport" class="custom-checkbox">
+                            <span class="font-gothic tracking-wide group-hover:text-gold transition-colors">{{ evt.name }}</span>
+                        </label>
+                    </div>
+
                     <textarea v-model="csvInput" rows="5" class="premium-input mb-6" placeholder="VIP1, John Smith&#10;VIP1, Jane Smith"></textarea>
                     <div class="flex items-center gap-6">
                         <button @click="importCSV" class="btn-gold">Execute Ritual</button>
-                        <span v-if="csvMessage" class="text-xs tracking-widest uppercase text-gold">{{ csvMessage }}</span>
                     </div>
                 </div>
 
                 <div class="stationery-card p-8 md:p-12">
                     <h3 class="font-gothic text-2xl text-gold mb-6">Inscribe Single Guest</h3>
+                    
+                    <label class="block text-[0.65rem] font-semibold text-gold uppercase tracking-[0.2em] mb-3">Grant Access To Events:</label>
+                    <div class="flex flex-wrap gap-6 mb-6">
+                        <label v-for="evt in settings.events" :key="evt.id" class="flex items-center gap-3 cursor-pointer text-sm text-parchment group">
+                            <input type="checkbox" :value="evt.id" v-model="targetEventsSingle" class="custom-checkbox">
+                            <span class="font-gothic tracking-wide group-hover:text-gold transition-colors">{{ evt.name }}</span>
+                        </label>
+                    </div>
+
                     <div class="flex flex-col md:flex-row gap-6">
                         <input v-model="newGuestCode" type="text" placeholder="Cipher Code" class="premium-input md:w-1/3" />
                         <input v-model="newGuestName" type="text" placeholder="Full Name" class="premium-input md:w-1/3" />
@@ -373,6 +416,10 @@
                     <div class="stationery-card p-8 md:p-12">
                         <h3 class="font-gothic text-2xl text-gold mb-6">Forge Menu Item</h3>
                         <div class="space-y-6 mb-8">
+                            <select v-model="newMenu.eventId" class="premium-input text-gold font-semibold tracking-widest uppercase">
+                                <option :value="null" disabled>-- Assign to Event --</option>
+                                <option v-for="evt in settings.events" :value="evt.id">{{ evt.name }}</option>
+                            </select>
                             <input v-model="newMenu.name" type="text" placeholder="Dish Name (e.g. Midnight Beef)" class="premium-input" />
                             <div class="relative">
                                 <span class="absolute left-5 top-1/2 -translate-y-1/2 text-[#7a6b7c] font-gothic text-xl">£</span>
@@ -398,37 +445,102 @@
                 </div>
 
                 <div class="space-y-6">
-                    <h3 class="font-gothic text-2xl text-parchment text-center mb-6 mt-4">Current Offerings</h3>
-                    <div v-for="item in menu" :key="item.id" class="stationery-card p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                        <div>
-                            <div class="flex items-center gap-4 mb-2">
-                                <h4 class="font-gothic text-2xl text-gold">{{ item.name }}</h4>
-                                <span class="border border-[#3c2441] text-[0.6rem] px-2 py-1 tracking-widest uppercase text-[#a999a9]">{{ item.tags }}</span>
+                    <h3 class="font-gothic text-2xl text-parchment text-center mb-6 mt-4">Current Offerings Registry</h3>
+                    
+                    <div v-for="evt in settings.events" :key="evt.id" class="mb-10">
+                        <h4 class="text-gold text-lg font-gothic border-b border-[#3c2441] pb-2 mb-4">{{ evt.name }}</h4>
+                        <div v-for="item in getMenuForEvent(evt.id)" :key="item.id" class="stationery-card p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-4">
+                            <div>
+                                <div class="flex items-center gap-4 mb-2">
+                                    <h4 class="font-gothic text-2xl text-parchment">{{ item.name }}</h4>
+                                    <span class="border border-[#3c2441] text-[0.6rem] px-2 py-1 tracking-widest uppercase text-[#a999a9]">{{ item.tags }}</span>
+                                </div>
+                                <p class="text-sm text-[#a999a9] font-gothic italic tracking-wide mb-3">{{ item.description }}</p>
+                                <p class="text-gold text-xs tracking-widest uppercase font-semibold">Cost: £{{ parseFloat(item.cost).toFixed(2) }}</p>
                             </div>
-                            <p class="text-sm text-parchment font-gothic italic tracking-wide mb-3">{{ item.description }}</p>
-                            <p class="text-gold text-xs tracking-widest uppercase font-semibold">Cost: £{{ parseFloat(item.cost).toFixed(2) }}</p>
+                            <button @click="deleteMenu(item.id)" class="flex items-center gap-2 text-[0.65rem] font-semibold text-[#8b2e3b] hover:text-white uppercase tracking-[0.2em] px-4 py-3 border border-[#8b2e3b] hover:bg-[#8b2e3b] transition-colors duration-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                Banish
+                            </button>
                         </div>
-                        <button @click="deleteMenu(item.id)" class="text-[0.65rem] font-semibold text-[#8b2e3b] hover:text-white uppercase tracking-[0.2em] px-4 py-2 border border-[#8b2e3b] hover:bg-[#8b2e3b] transition-colors duration-500">Banish</button>
+                        <p v-if="getMenuForEvent(evt.id).length === 0" class="text-xs text-[#7a6b7c] tracking-widest uppercase italic">No offerings registered.</p>
                     </div>
                 </div>
             </div>
 
-            <!-- TAB: Settings -->
-            <div v-if="adminTab === 'settings'" class="stationery-card p-8 md:p-12 max-w-lg mx-auto animate-fade-in">
-                <h3 class="font-gothic text-2xl text-gold mb-2 text-center">Temporal Settings</h3>
-                <div class="gothic-divider w-1/2 mx-auto mb-6"></div>
-                <p class="text-[0.65rem] tracking-[0.2em] leading-loose text-[#a999a9] mb-8 text-center uppercase">Configure the deadline. Past this date, no mortal may alter their fate.</p>
-                
-                <label class="block text-[0.65rem] font-semibold text-gold uppercase tracking-[0.2em] mb-3">Deadline Date</label>
-                <input v-model="settings.lockDate" type="date" class="premium-input mb-8 text-center" />
-                
-                <button @click="saveSettings" class="btn-gold w-full">Seal Configuration</button>
-                <transition name="fade">
-                    <p v-if="settingsMessage" class="text-gold text-xs tracking-widest uppercase mt-6 text-center">{{ settingsMessage }}</p>
-                </transition>
-            </div>
-        </div>
+            <!-- TAB: Events & Settings -->
+            <div v-if="adminTab === 'events_settings'" class="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in">
+                <!-- Event Management -->
+                <div class="stationery-card p-8 md:p-12">
+                    <h3 class="font-gothic text-2xl text-gold mb-2 text-center">Event Configuration</h3>
+                    <div class="gothic-divider w-1/2 mx-auto mb-6"></div>
+                    <p class="text-[0.65rem] tracking-[0.2em] leading-loose text-[#a999a9] mb-8 text-center uppercase">Define the chapters of your celebration.</p>
+                    
+                    <div class="space-y-4 mb-8">
+                        <div v-for="evt in settings.events" :key="evt.id" class="flex items-center gap-4">
+                            <input v-model="evt.name" type="text" class="premium-input" />
+                            <button @click="removeEvent(evt.id)" class="text-[#8b2e3b] hover:text-gold transition-colors duration-300 p-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+                    </div>
 
+                    <div class="flex gap-4 mb-6 pt-6 border-t border-[#3c2441]">
+                        <input v-model="newEventName" type="text" placeholder="New Event Name..." class="premium-input" />
+                        <button @click="addEvent" class="btn-gold whitespace-nowrap">Add Event</button>
+                    </div>
+                    <button @click="saveSettings" class="btn-gold w-full mt-4">Save Events</button>
+                </div>
+
+                <!-- Temporal Settings -->
+                <div class="stationery-card p-8 md:p-12">
+                    <h3 class="font-gothic text-2xl text-gold mb-2 text-center">Temporal Settings</h3>
+                    <div class="gothic-divider w-1/2 mx-auto mb-6"></div>
+                    <p class="text-[0.65rem] tracking-[0.2em] leading-loose text-[#a999a9] mb-8 text-center uppercase">Configure the RSVP deadline. Past this date, no mortal may alter their fate.</p>
+                    
+                    <label class="block text-[0.65rem] font-semibold text-gold uppercase tracking-[0.2em] mb-3">Deadline Date</label>
+                    <input v-model="settings.lockDate" type="date" class="premium-input mb-8 text-center" />
+                    
+                    <button @click="saveSettings" class="btn-gold w-full">Seal Timeline</button>
+                </div>
+            </div>
+
+            <!-- TAB: Dispatch Center -->
+            <div v-if="adminTab === 'dispatch'" class="space-y-8 animate-fade-in">
+                <div class="stationery-card p-8 md:p-12 text-center">
+                    <h3 class="font-gothic text-3xl text-gold mb-2">Invitation Dispatch Center</h3>
+                    <div class="gothic-divider w-1/3 mx-auto mb-6"></div>
+                    <p class="text-[0.65rem] tracking-[0.2em] leading-loose text-[#a999a9] uppercase max-w-2xl mx-auto">
+                        Summon your guests by dispatching their unique cipher codes. Use the tools below to route invitations directly through your device's native communication channels.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div v-for="house in groupedHouseholds" :key="house.code" class="stationery-card p-8">
+                        <h4 class="font-gothic text-2xl text-parchment mb-1">{{ house.names }}</h4>
+                        <p class="text-gold text-xs tracking-widest uppercase mb-6 font-semibold">Cipher: {{ house.code }}</p>
+                        
+                        <div class="flex flex-col gap-3">
+                            <button @click="shareNative(house)" class="btn-gold w-full !text-[0.65rem]">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="1.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                                Summon via App
+                            </button>
+                            <div class="flex gap-3">
+                                <button @click="shareWhatsApp(house)" class="w-1/2 flex items-center justify-center gap-2 border border-[#3c2441] text-[#a999a9] hover:border-[#25D366] hover:text-[#25D366] transition-colors duration-300 text-[0.65rem] tracking-widest uppercase py-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                                    WhatsApp
+                                </button>
+                                <button @click="shareEmail(house)" class="w-1/2 flex items-center justify-center gap-2 border border-[#3c2441] text-[#a999a9] hover:border-parchment hover:text-parchment transition-colors duration-300 text-[0.65rem] tracking-widest uppercase py-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                    Email
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </main>
 
     <!-- FOOTER -->
@@ -437,46 +549,73 @@
         <button v-if="view === 'landing'" @click="view = 'admin-login'" class="hover:text-gold transition duration-500 font-medium">Sanctum Login</button>
     </footer>
 
+    <!-- Global Premium Toast Notification System -->
+    <transition name="toast">
+        <div v-if="toastMessage" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-black/90 border border-gold px-8 py-4 shadow-2xl shadow-black">
+            <p class="text-gold text-xs tracking-[0.2em] uppercase font-semibold">{{ toastMessage }}</p>
+        </div>
+    </transition>
+
 </div>
 
 <script>
     const { createApp } = Vue;
 
     // --- SEED DATA ---
+    const defaultSettings = { 
+        lockDate: '2026-12-31',
+        events: [
+            { id: 'evt_1', name: 'The Wedding Breakfast' },
+            { id: 'evt_2', name: 'The Evening Reception' }
+        ]
+    };
+
     const defaultMenu = [
-        { id: 'm1', name: 'Braised Midnight Beef', description: 'Slow-cooked short rib served with a dark plum and black cherry reduction.', tags: 'GF', cost: 65.00 },
-        { id: 'm2', name: 'Nightshade Mushroom Risotto', description: 'Rich black truffle and aged parmesan arborio, finished with port wine.', tags: 'V, GF', cost: 45.00 },
-        { id: 'm3', name: 'Raven Sea Bass', description: 'Pan-seared sea bass accompanied by squid ink linguine and samphire.', tags: 'Pescatarian', cost: 55.00 }
+        { id: 'm1', eventId: 'evt_1', name: 'Braised Midnight Beef', description: 'Slow-cooked short rib served with a dark plum and black cherry reduction.', tags: 'GF', cost: 65.00 },
+        { id: 'm2', eventId: 'evt_1', name: 'Nightshade Mushroom Risotto', description: 'Rich black truffle and aged parmesan arborio, finished with port wine.', tags: 'V, GF', cost: 45.00 },
+        { id: 'm3', eventId: 'evt_2', name: 'Evening Boar Sliders', description: 'Pulled wild boar on brioche with blackened apple compote.', tags: '', cost: 20.00 }
     ];
 
     const defaultGuests = [
-        { id: 'g1', householdCode: 'VIP2024', name: 'Eleanor Vance', isAttending: null, mealId: null, allergies: '' },
-        { id: 'g2', householdCode: 'VIP2024', name: 'Theodora Vance', isAttending: null, mealId: null, allergies: '' },
-        { id: 'g3', householdCode: 'FAMILY1', name: 'Victor Frankenstein', isAttending: null, mealId: null, allergies: '' }
+        { 
+            id: 'g1', householdCode: 'VIP2024', name: 'Eleanor Vance', allergies: '', 
+            invitations: ['evt_1', 'evt_2'], 
+            rsvps: { 'evt_1': { isAttending: null, mealId: null }, 'evt_2': { isAttending: null, mealId: null } }
+        },
+        { 
+            id: 'g2', householdCode: 'VIP2024', name: 'Theodora Vance', allergies: '', 
+            invitations: ['evt_1', 'evt_2'], 
+            rsvps: { 'evt_1': { isAttending: null, mealId: null }, 'evt_2': { isAttending: null, mealId: null } }
+        },
+        { 
+            id: 'g3', householdCode: 'FAMILY1', name: 'Victor Frankenstein', allergies: '', 
+            invitations: ['evt_2'], 
+            rsvps: { 'evt_2': { isAttending: null, mealId: null } }
+        }
     ];
-
-    const defaultSettings = { lockDate: '2026-12-31' };
 
     createApp({
         data() {
             return {
-                view: 'landing', // landing, guest-portal, admin-login, admin-dashboard
+                view: 'landing', 
                 loginCode: '',
                 loginError: '',
                 currentHouseholdCode: null,
-                saveMessage: '',
                 adminEmail: '',
                 adminPassword: '',
                 adminTab: 'analytics',
                 csvInput: '',
-                csvMessage: '',
                 newGuestCode: '',
                 newGuestName: '',
-                newMenu: { name: '', cost: '', tags: '', description: '' },
-                settingsMessage: '',
+                targetEventsSingle: [],
+                targetEventsImport: [],
+                newMenu: { name: '', cost: '', tags: '', description: '', eventId: null },
+                newEventName: '',
+                toastMessage: null, 
+                toastTimeout: null,
                 menu: [],
                 guests: [],
-                settings: {}
+                settings: { events: [] }
             }
         },
         computed: {
@@ -486,6 +625,17 @@
             },
             primaryGuestName() {
                 return this.currentHousehold.length > 0 ? this.currentHousehold[0].name : 'Guest';
+            },
+            groupedHouseholds() {
+                const groups = {};
+                this.guests.forEach(g => {
+                    if (!groups[g.householdCode]) groups[g.householdCode] = [];
+                    groups[g.householdCode].push(g.name);
+                });
+                return Object.keys(groups).map(code => ({
+                    code: code,
+                    names: groups[code].join(' & ')
+                }));
             },
             isLocked() {
                 if(!this.settings.lockDate) return false;
@@ -498,45 +648,75 @@
                 if(!this.settings.lockDate) return '';
                 return new Date(this.settings.lockDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
             },
-            attendingCount() { return this.guests.filter(g => g.isAttending === true).length; },
-            declinedCount() { return this.guests.filter(g => g.isAttending === false).length; },
+            attendingCount() { 
+                let count = 0;
+                this.guests.forEach(g => {
+                    g.invitations.forEach(evtId => {
+                        if(g.rsvps[evtId] && g.rsvps[evtId].isAttending) count++;
+                    });
+                });
+                return count;
+            },
+            declinedCount() { 
+                let count = 0;
+                this.guests.forEach(g => {
+                    g.invitations.forEach(evtId => {
+                        if(g.rsvps[evtId] && g.rsvps[evtId].isAttending === false) count++;
+                    });
+                });
+                return count;
+            },
             mealCounts() {
                 const counts = {};
                 this.guests.forEach(g => {
-                    if (g.isAttending && g.mealId) { counts[g.mealId] = (counts[g.mealId] || 0) + 1; }
+                    g.invitations.forEach(evtId => {
+                        const rsvp = g.rsvps[evtId];
+                        if (rsvp && rsvp.isAttending && rsvp.mealId) { 
+                            counts[rsvp.mealId] = (counts[rsvp.mealId] || 0) + 1; 
+                        }
+                    });
                 });
                 return counts;
             },
             grandTotalCost() {
                 let total = 0;
                 this.guests.forEach(g => {
-                    if(g.isAttending && g.mealId) {
-                        const meal = this.menu.find(m => m.id === g.mealId);
-                        if(meal) total += parseFloat(meal.cost);
-                    }
+                    total += this.getGuestTotalCost(g);
                 });
                 return total;
             },
             guestsWithAllergies() {
-                return this.guests.filter(g => g.isAttending && g.allergies && g.allergies.trim() !== '');
+                return this.guests.filter(g => {
+                    const attendingAny = g.invitations.some(evtId => g.rsvps[evtId] && g.rsvps[evtId].isAttending);
+                    return attendingAny && g.allergies && g.allergies.trim() !== '';
+                });
             }
         },
         methods: {
             loadData() {
-                // Incremented cache to v8 to flush old styling and menu states
-                const storedMenu = localStorage.getItem('wedding_menu_v8');
-                const storedGuests = localStorage.getItem('wedding_guests_v8');
-                const storedSettings = localStorage.getItem('wedding_settings_v8');
+                // Incremented cache to v12 to flush stacking context fix and logic updates
+                const storedMenu = localStorage.getItem('wedding_menu_v12');
+                const storedGuests = localStorage.getItem('wedding_guests_v12');
+                const storedSettings = localStorage.getItem('wedding_settings_v12');
 
                 this.menu = storedMenu ? JSON.parse(storedMenu) : defaultMenu;
                 this.guests = storedGuests ? JSON.parse(storedGuests) : defaultGuests;
                 this.settings = storedSettings ? JSON.parse(storedSettings) : defaultSettings;
+                
+                this.targetEventsImport = this.settings.events.map(e => e.id);
+                this.targetEventsSingle = this.settings.events.map(e => e.id);
+
                 this.saveDb();
             },
             saveDb() {
-                localStorage.setItem('wedding_menu_v8', JSON.stringify(this.menu));
-                localStorage.setItem('wedding_guests_v8', JSON.stringify(this.guests));
-                localStorage.setItem('wedding_settings_v8', JSON.stringify(this.settings));
+                localStorage.setItem('wedding_menu_v12', JSON.stringify(this.menu));
+                localStorage.setItem('wedding_guests_v12', JSON.stringify(this.guests));
+                localStorage.setItem('wedding_settings_v12', JSON.stringify(this.settings));
+            },
+            showToast(message) {
+                this.toastMessage = message;
+                if(this.toastTimeout) clearTimeout(this.toastTimeout);
+                this.toastTimeout = setTimeout(() => { this.toastMessage = null; }, 3500);
             },
             loginGuest() {
                 this.loginError = '';
@@ -553,8 +733,7 @@
             },
             saveRSVP() {
                 this.saveDb();
-                this.saveMessage = 'Your decisions have been etched in stone.';
-                setTimeout(() => { this.saveMessage = ''; }, 4000);
+                this.showToast('Your decisions have been etched in stone.');
             },
             loginAdmin() {
                 this.loginError = '';
@@ -564,17 +743,47 @@
                     this.loginError = 'Invalid credentials provided.';
                 }
             },
+            getEventName(eventId) {
+                const evt = this.settings.events.find(e => e.id === eventId);
+                return evt ? evt.name : 'Unknown Event';
+            },
+            getMenuForEvent(eventId) {
+                return this.menu.filter(m => m.eventId === eventId);
+            },
             getMenuName(mealId) {
+                if(!mealId) return 'Unselected';
                 const meal = this.menu.find(m => m.id === mealId);
                 return meal ? meal.name : 'Unselected';
+            },
+            getEventNameForMenu(mealId) {
+                const meal = this.menu.find(m => m.id === mealId);
+                return meal ? this.getEventName(meal.eventId) : '';
             },
             getMealCost(mealId) {
                 if(!mealId) return 0;
                 const meal = this.menu.find(m => m.id === mealId);
                 return meal ? parseFloat(meal.cost) : 0;
             },
+            getGuestTotalCost(guest) {
+                let cost = 0;
+                guest.invitations.forEach(evtId => {
+                    const rsvp = guest.rsvps[evtId];
+                    if(rsvp && rsvp.isAttending && rsvp.mealId) {
+                        cost += this.getMealCost(rsvp.mealId);
+                    }
+                });
+                return cost;
+            },
+            createGuestRsvps(invitations) {
+                const rsvps = {};
+                invitations.forEach(id => rsvps[id] = { isAttending: null, mealId: null });
+                return rsvps;
+            },
             importCSV() {
-                if(!this.csvInput.trim()) return;
+                if(!this.csvInput.trim() || this.targetEventsImport.length === 0) {
+                    this.showToast("Missing data or events not selected.");
+                    return;
+                }
                 const lines = this.csvInput.split('\n');
                 let added = 0;
                 lines.forEach(line => {
@@ -585,7 +794,9 @@
                         if(code && name) {
                             this.guests.push({
                                 id: 'g_' + Date.now() + Math.floor(Math.random() * 1000),
-                                householdCode: code, name: name, isAttending: null, mealId: null, allergies: ''
+                                householdCode: code, name: name, allergies: '',
+                                invitations: [...this.targetEventsImport],
+                                rsvps: this.createGuestRsvps(this.targetEventsImport)
                             });
                             added++;
                         }
@@ -593,41 +804,89 @@
                 });
                 this.saveDb();
                 this.csvInput = '';
-                this.csvMessage = `Successfully summoned ${added} souls.`;
-                setTimeout(() => { this.csvMessage = ''; }, 3000);
+                this.showToast(`Successfully summoned ${added} souls.`);
             },
             addGuest() {
-                if(!this.newGuestCode || !this.newGuestName) return;
+                if(!this.newGuestCode || !this.newGuestName || this.targetEventsSingle.length === 0) return;
                 this.guests.push({
                     id: 'g_' + Date.now(),
                     householdCode: this.newGuestCode.trim().toUpperCase(), 
-                    name: this.newGuestName.trim(),
-                    isAttending: null, mealId: null, allergies: ''
+                    name: this.newGuestName.trim(), allergies: '',
+                    invitations: [...this.targetEventsSingle],
+                    rsvps: this.createGuestRsvps(this.targetEventsSingle)
                 });
                 this.saveDb();
                 this.newGuestCode = ''; this.newGuestName = '';
+                this.showToast('Guest inscribed successfully.');
             },
             addMenu() {
-                if(!this.newMenu.name || !this.newMenu.cost) return;
+                if(!this.newMenu.name || !this.newMenu.cost || !this.newMenu.eventId) return;
                 this.menu.push({
                     id: 'm_' + Date.now(),
+                    eventId: this.newMenu.eventId,
                     name: this.newMenu.name, cost: parseFloat(this.newMenu.cost),
                     tags: this.newMenu.tags, description: this.newMenu.description
                 });
                 this.saveDb();
-                this.newMenu = { name: '', cost: '', tags: '', description: '' };
+                this.newMenu = { name: '', cost: '', tags: '', description: '', eventId: null };
+                this.showToast('Offering forged successfully.');
             },
             deleteMenu(id) {
                 if(confirm("Banish this menu offering permanently?")) {
                     this.menu = this.menu.filter(m => m.id !== id);
-                    this.guests.forEach(g => { if(g.mealId === id) g.mealId = null; });
+                    this.guests.forEach(g => { 
+                        Object.keys(g.rsvps).forEach(evtId => {
+                            if(g.rsvps[evtId].mealId === id) g.rsvps[evtId].mealId = null;
+                        });
+                    });
                     this.saveDb();
+                    this.showToast('Offering banished.');
+                }
+            },
+            addEvent() {
+                if(!this.newEventName.trim()) return;
+                this.settings.events.push({ id: 'evt_' + Date.now(), name: this.newEventName.trim() });
+                this.newEventName = '';
+                this.saveDb();
+                this.showToast('Chapter created.');
+            },
+            removeEvent(id) {
+                if(confirm("Warning: Banishing an event will permanently orphan related menu items and guest invitations. Proceed?")) {
+                    this.settings.events = this.settings.events.filter(e => e.id !== id);
+                    this.guests.forEach(g => {
+                        g.invitations = g.invitations.filter(i => i !== id);
+                    });
+                    this.saveDb();
+                    this.showToast('Chapter banished.');
                 }
             },
             saveSettings() {
                 this.saveDb();
-                this.settingsMessage = 'Temporal configuration sealed.';
-                setTimeout(() => { this.settingsMessage = ''; }, 3000);
+                this.showToast('Temporal configuration sealed.');
+            },
+            generateSummonText(house) {
+                const url = window.location.href.split('?')[0].split('#')[0];
+                return `You are summoned to the celebration of Andrew & Samantha.\n\nPray, use the cipher below to unlock your invitation and declare your fate:\n\nCIPHER: ${house.code}\n\n${url}`;
+            },
+            shareNative(house) {
+                const text = this.generateSummonText(house);
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Andrew & Samantha RSVP',
+                        text: text
+                    }).catch(err => console.log('Sharing dismissed.'));
+                } else {
+                    this.showToast("Native Share not supported. Use WhatsApp or Email.");
+                }
+            },
+            shareWhatsApp(house) {
+                const text = encodeURIComponent(this.generateSummonText(house));
+                window.open(`https://wa.me/?text=${text}`, '_blank');
+            },
+            shareEmail(house) {
+                const subject = encodeURIComponent("Andrew & Samantha | Wedding Invitation");
+                const body = encodeURIComponent(this.generateSummonText(house));
+                window.location.href = `mailto:?subject=${subject}&body=${body}`;
             },
             logout() {
                 this.view = 'landing';
