@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Andrew & Samantha | RSVP</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vue.js -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Google Fonts: Cormorant Garamond (Gothic/Elegant) & Montserrat (Premium Sans) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CSS Variables for Premium Gothic Palette */
+        :root {
+            --abyss: #0a050c;        /* Near black with a hint of purple */
+            --velvet: #160a18;       /* Deepest plum */
+            --blood-wine: #38121f;   /* Dark crimson shadow */
+            --tarnished-gold: #c5a059;
+            --gold-light: #e8ce95;
+            --parchment: #e6e1db;
+        }
+
+        /* Base & Texture overlay for a matte, high-end paper feel */
+        body {
+            background-color: var(--abyss) !important;
+            color: var(--parchment);
+            font-family: 'Montserrat', sans-serif;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            position: relative;
+        }
+        
+        /* CSS Noise Texture for physical luxury feel */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .font-gothic { font-family: 'Cormorant Garamond', serif; }
+        .text-gold { color: var(--tarnished-gold); }
+        .border-gold { border-color: var(--tarnished-gold); }
+
+        /* Premium Input Fields - Sharp, stark, elegant */
+        .premium-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #3c2441;
+            color: var(--parchment);
+            padding: 1rem 1.25rem;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            transition: all 0.4s ease;
+            border-radius: 0; /* Sharp corners for Gothic style */
+        }
+        .premium-input:focus {
+            outline: none;
+            border-color: var(--tarnished-gold);
+            background: rgba(20, 10, 20, 0.8);
+            box-shadow: 0 0 15px rgba(197, 160, 89, 0.1);
+        }
+        .premium-input::placeholder { color: #5a4b5c; letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.75rem; }
+        .premium-input:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Premium Ghost Buttons */
+        .btn-gold {
+            background: transparent;
+            color: var(--tarnished-gold);
+            border: 1px solid var(--tarnished-gold);
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 400;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            padding: 1rem 2rem;
+            font-size: 0.85rem;
+            transition: all 0.5s ease;
+            position: relative;
+            overflow: hidden;
+            border-radius: 0;
+        }
+        .btn-gold::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--tarnished-gold);
+            z-index: -1;
+            transition: transform 0.5s ease;
+            transform: scaleX(0);
+            transform-origin: right;
+        }
+        .btn-gold:hover:not(:disabled) {
+            color: #000;
+            box-shadow: 0 0 20px rgba(197, 160, 89, 0.2);
+        }
+        .btn-gold:hover:not(:disabled)::before {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+        .btn-gold:disabled { opacity: 0.3; border-color: #5a4b5c; color: #5a4b5c; cursor: not-allowed; }
+
+        /* Gothic Stationery Card Effect (Double Border) */
+        .stationery-card {
+            background-color: var(--velvet);
+            border: 1px solid var(--tarnished-gold);
+            outline: 1px solid var(--tarnished-gold);
+            outline-offset: -6px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            position: relative;
+        }
+
+        /* SVG Gothic Divider */
+        .gothic-divider {
+            width: 100%;
+            height: 20px;
+            background-image: url("data:image/svg+xml,%3Csvg width='100%25' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,10 Lcalc(50%25 - 15px),10 L50%25,0 Lcalc(50%25 + 15px),10 L100%25,10' stroke='%23c5a059' stroke-width='1' fill='none' opacity='0.5'/%3E%3Cpath d='Mcalc(50%25 - 5px),10 L50%25,5 Lcalc(50%25 + 5px),10 L50%25,15 Z' fill='%23c5a059' opacity='0.8'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            margin: 1.5rem 0;
+        }
+
+        /* Vue Transitions */
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.5s ease, transform 0.5s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; transform: translateY(-10px); }
+    </style>
+</head>
+<body class="bg-[#0a050c]">
+<div id="app" class="flex flex-col min-h-screen relative z-10">
+
+    <!-- HEADER -->
+    <header class="w-full py-16 px-6 flex flex-col items-center justify-center relative">
+        <h1 class="font-gothic text-5xl md:text-7xl text-gold font-medium tracking-wide mb-4 text-center leading-tight drop-shadow-lg">
+            Andrew <span class="italic text-3xl md:text-5xl mx-2 text-[#8a6d3b]">&</span> Samantha
+        </h1>
+        <p class="font-sans text-[0.65rem] md:text-xs tracking-[0.4em] uppercase text-[#a999a9]">A Celebration of Eternity</p>
+        
+        <button v-if="view !== 'landing'" @click="logout" class="absolute top-6 right-6 text-[0.65rem] font-medium text-[#7a6b7c] hover:text-gold transition duration-300 tracking-[0.2em] uppercase">
+            Sign Out
+        </button>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow flex items-center justify-center p-4 md:p-8 w-full">
+
+        <!-- 1. LANDING PAGE -->
+        <div v-if="view === 'landing'" class="stationery-card p-10 md:p-14 max-w-md w-full text-center animate-fade-in">
+            <h2 class="font-gothic text-3xl text-parchment mb-2">Access Portal</h2>
+            <div class="gothic-divider"></div>
+            <p class="text-[#a999a9] text-xs leading-loose tracking-widest uppercase mb-8">Enter the unique cipher provided upon your formal invitation.</p>
+            
+            <div class="space-y-6">
+                <input v-model="loginCode" @keyup.enter="loginGuest" type="text" placeholder="e.g. VIP2024" class="premium-input text-center text-lg tracking-[0.2em] uppercase" />
+                <p v-if="loginError" class="text-[#8b2e3b] text-xs font-medium tracking-wider uppercase">{{ loginError }}</p>
+                <button @click="loginGuest" class="btn-gold w-full mt-4">Unlock Invitation</button>
+            </div>
+        </div>
+
+        <!-- 2. GUEST RSVP PORTAL -->
+        <div v-if="view === 'guest-portal'" class="w-full max-w-3xl">
+            <!-- Contextual Onboarding Header -->
+            <div class="text-center mb-12">
+                <h2 class="font-gothic text-4xl text-parchment mb-2 tracking-wide">Welcome, {{ primaryGuestName }}</h2>
+                <div class="gothic-divider w-1/2 mx-auto"></div>
+                <div class="mt-6 inline-block text-center max-w-lg">
+                    <p class="text-[#a999a9] text-xs leading-loose tracking-widest uppercase">
+                        This cipher grants you authority to dictate attendance and dietary requirements for your entire party. Pray, complete the responses below.
+                    </p>
+                </div>
+                <p class="text-[#8b2e3b] text-xs tracking-widest uppercase mt-8 font-semibold" v-if="isLocked">The portal is sealed. Selections are absolute.</p>
+                <p class="text-gold text-xs tracking-widest uppercase mt-8" v-else>Kindly declare by {{ formattedLockDate }}</p>
+            </div>
+
+            <!-- Guest Iteration -->
+            <div v-for="guest in currentHousehold" :key="guest.id" class="stationery-card p-8 md:p-10 mb-8">
+                <h3 class="font-gothic text-3xl text-gold mb-2 text-center">{{ guest.name }}</h3>
+                <div class="gothic-divider mb-8"></div>
+                
+                <!-- Tappable RSVP Cards (Sharp Gothic aesthetic) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                    <label class="relative" :class="isLocked ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'">
+                        <input type="radio" :name="'attending-'+guest.id" :value="true" v-model="guest.isAttending" :disabled="isLocked" class="peer sr-only">
+                        <div class="p-5 border border-[#3c2441] bg-black/40 peer-checked:border-gold peer-checked:bg-[#c5a059]/10 transition-all duration-500 text-center hover:bg-[#3c2441]/30">
+                            <span class="block text-xs font-semibold uppercase tracking-[0.2em] text-[#7a6b7c] peer-checked:text-gold">Accepts with Pleasure</span>
+                        </div>
+                    </label>
+                    <label class="relative" :class="isLocked ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'">
+                        <input type="radio" :name="'attending-'+guest.id" :value="false" v-model="guest.isAttending" :disabled="isLocked" class="peer sr-only">
+                        <div class="p-5 border border-[#3c2441] bg-black/40 peer-checked:border-[#7a6b7c] peer-checked:bg-white/5 transition-all duration-500 text-center hover:bg-[#3c2441]/30">
+                            <span class="block text-xs font-semibold uppercase tracking-[0.2em] text-[#7a6b7c] peer-checked:text-parchment">Declines with Regret</span>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Dietary Requirements -->
+                <div class="mb-6">
+                    <label class="block text-[0.65rem] font-semibold text-gold uppercase tracking-[0.2em] mb-3">Dietary Afflictions & Allergies</label>
+                    <textarea v-model="guest.allergies" :disabled="isLocked" rows="2" placeholder="Specify any severe restrictions..." class="premium-input resize-none"></textarea>
+                </div>
+
+                <!-- Meal Selection (Tarot Card Aesthetic) -->
+                <div :class="guest.isAttending === true ? 'grid-rows-[1fr] opacity-100 mt-8' : 'grid-rows-[0fr] opacity-0 mt-0'" class="grid transition-all duration-700 ease-in-out">
+                    <div class="overflow-hidden">
+                        <div class="bg-black/40 p-6 border border-[#3c2441]">
+                            <label class="block text-[0.65rem] font-semibold text-gold uppercase tracking-[0.2em] mb-4 text-center border-b border-[#3c2441] pb-2">Select Your Offering</label>
+                            
+                            <div class="grid grid-cols-1 gap-4">
+                                <!-- Interactive Menu Cards without OS Select Dropdowns -->
+                                <label v-for="item in menu" :key="item.id" class="relative group" :class="isLocked ? 'cursor-not-allowed' : 'cursor-pointer'">
+                                    <input type="radio" :name="'meal-'+guest.id" :value="item.id" v-model="guest.mealId" :disabled="isLocked" class="peer sr-only">
+                                    <div class="p-6 border border-[#3c2441] bg-black/20 peer-checked:border-gold peer-checked:bg-[#c5a059]/10 transition-all duration-500 hover:bg-[#3c2441]/20 flex flex-col items-center text-center">
+                                        <div class="flex items-center gap-3 mb-3">
+                                            <h4 class="font-gothic text-2xl text-parchment group-hover:text-gold peer-checked:text-gold transition-colors duration-300">{{ item.name }}</h4>
+                                            <span v-if="item.tags" class="border border-[#5a4b5c] text-[0.55rem] px-2 py-1 tracking-widest uppercase text-[#a999a9] peer-checked:border-gold">{{ item.tags }}</span>
+                                        </div>
+                                        <p class="text-sm text-[#a999a9] font-gothic italic tracking-wide leading-relaxed">{{ item.description }}</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Action -->
+            <div class="flex flex-col items-center mt-12 mb-20">
+                <button @click="saveRSVP" :disabled="isLocked" class="btn-gold min-w-[250px]">Seal Our Fate</button>
+                <transition name="fade">
+                    <p v-if="saveMessage" class="text-gold text-xs tracking-widest uppercase mt-6 font-medium">{{ saveMessage }}</p>
+                </transition>
+            </div>
+        </div>
+
+        <!-- 3. ADMIN LOGIN -->
+        <div v-if="view === 'admin-login'" class="stationery-card p-10 md:p-14 max-w-md w-full shadow-2xl">
+            <h2 class="font-gothic text-3xl text-gold mb-2 text-center">Sanctum Access</h2>
+            <div class="gothic-divider"></div>
+            <p class="text-[#a999a9] text-xs mb-8 text-center tracking-widest uppercase">Authorized personnel only.</p>
+            
+            <div class="space-y-6">
+                <input v-model="adminEmail" type="email" placeholder="Email Address" class="premium-input" />
+                <input v-model="adminPassword" type="password" placeholder="Password" @keyup.enter="loginAdmin" class="premium-input" />
+                <p v-if="loginError" class="text-[#8b2e3b] text-xs font-medium text-center uppercase tracking-widest">{{ loginError }}</p>
+                <button @click="loginAdmin" class="btn-gold w-full mt-2">Enter Sanctum</button>
+            </div>
+        </div>
+
+        <!-- 4. ADMIN DASHBOARD -->
+        <div v-if="view === 'admin-dashboard'" class="w-full max-w-6xl">
+            
+            <!-- Dashboard Navigation -->
+            <nav class="flex flex-wrap gap-2 md:gap-8 mb-10 border-b border-[#3c2441] pb-4 justify-center">
+                <button v-for="tab in ['analytics', 'guests', 'menu', 'settings']" :key="tab" 
+                        @click="adminTab = tab" 
+                        :class="adminTab === tab ? 'text-gold border-b border-gold' : 'text-[#7a6b7c] hover:text-parchment'" 
+                        class="px-2 py-2 text-[0.7rem] font-semibold uppercase tracking-[0.2em] transition-colors duration-500">
+                    {{ tab }}
+                </button>
+            </nav>
+
+            <!-- TAB: Analytics -->
+            <div v-if="adminTab === 'analytics'" class="space-y-8 animate-fade-in">
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="stationery-card p-6 text-center">
+                        <p class="text-[#7a6b7c] text-[0.65rem] font-semibold uppercase tracking-[0.2em] mb-2">Total Souls</p>
+                        <p class="text-4xl font-gothic text-parchment">{{ guests.length }}</p>
+                    </div>
+                    <div class="stationery-card p-6 text-center">
+                        <p class="text-gold text-[0.65rem] font-semibold uppercase tracking-[0.2em] mb-2">Attending</p>
+                        <p class="text-4xl font-gothic text-parchment">{{ attendingCount }}</p>
+                    </div>
+                    <div class="stationery-card p-6 text-center">
+                        <p class="text-[#8b2e3b] text-[0.65rem] font-semibold uppercase tracking-[0.2em] mb-2">Declined</p>
+                        <p class="text-4xl font-gothic text-parchment">{{ declinedCount }}</p>
+                    </div>
+                    <div class="stationery-card p-6 text-center">
+                        <p class="text-[#7a6b7c] text-[0.65rem] font-semibold uppercase tracking-[0.2em] mb-2">Tribute (Cost)</p>
+                        <p class="text-3xl font-gothic text-gold mt-1">£{{ grandTotalCost.toLocaleString('en-GB', {minimumFractionDigits: 2}) }}</p>
+                    </div>
+                </div>
+
+                <!-- Sub-sections -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Menu Breakdown -->
+                    <div class="stationery-card p-8">
+                        <h3 class="font-gothic text-2xl text-gold mb-6 text-center">Catering Ledger</h3>
+                        <ul class="space-y-4">
+                            <li v-for="(count, mealId) in mealCounts" :key="mealId" class="flex justify-between items-center border-b border-[#3c2441] pb-3">
+                                <span class="text-sm text-parchment font-gothic tracking-wider">{{ getMenuName(mealId) }}</span>
+                                <span class="text-gold text-sm font-bold">{{ count }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Dietary Alerts -->
+                    <div class="stationery-card p-8">
+                        <h3 class="font-gothic text-2xl text-[#8b2e3b] mb-6 text-center">Medical Afflictions</h3>
+                        <div class="space-y-4 max-h-[300px] overflow-y-auto pr-4 custom-scrollbar">
+                            <div v-for="g in guestsWithAllergies" :key="g.id" class="bg-black/40 p-4 border border-[#3c2441]">
+                                <p class="text-xs font-semibold text-gold tracking-widest uppercase mb-2">{{ g.name }}</p>
+                                <p class="text-sm text-parchment font-gothic italic tracking-wide">"{{ g.allergies }}"</p>
+                            </div>
+                            <p v-if="guestsWithAllergies.length === 0" class="text-xs text-[#7a6b7c] tracking-widest uppercase text-center mt-8">No afflictions reported.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guest Table -->
+                <div class="stationery-card overflow-hidden">
+                    <div class="p-8 border-b border-[#3c2441]">
+                        <h3 class="font-gothic text-2xl text-gold text-center">Guest Registry</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-black/60 text-[0.65rem] uppercase tracking-[0.2em] text-[#7a6b7c]">
+                                <tr>
+                                    <th class="p-5 font-semibold">Name</th>
+                                    <th class="p-5 font-semibold">Cipher</th>
+                                    <th class="p-5 font-semibold">Status</th>
+                                    <th class="p-5 font-semibold">Offering</th>
+                                    <th class="p-5 font-semibold">Tribute</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm text-parchment divide-y divide-[#3c2441]">
+                                <tr v-for="g in guests" :key="g.id" class="hover:bg-white/[0.02] transition-colors duration-300">
+                                    <td class="p-5 font-gothic text-lg tracking-wide">{{ g.name }}</td>
+                                    <td class="p-5 font-mono text-xs text-[#a999a9]">{{ g.householdCode }}</td>
+                                    <td class="p-5 text-xs uppercase tracking-widest">
+                                        <span v-if="g.isAttending === true" class="text-gold">Attending</span>
+                                        <span v-else-if="g.isAttending === false" class="text-[#8b2e3b]">Declined</span>
+                                        <span v-else class="text-[#7a6b7c]">Pending</span>
+                                    </td>
+                                    <td class="p-5 font-gothic tracking-wide">{{ g.isAttending ? getMenuName(g.mealId) : '-' }}</td>
+                                    <td class="p-5 text-gold font-medium">{{ g.isAttending && g.mealId ? '£' + getMealCost(g.mealId).toFixed(2) : '-' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: Guests -->
+            <div v-if="adminTab === 'guests'" class="space-y-8 animate-fade-in">
+                <div class="stationery-card p-8 md:p-12">
+                    <h3 class="font-gothic text-2xl text-gold mb-2">Summon Souls (Bulk Import)</h3>
+                    <p class="text-xs text-[#7a6b7c] tracking-widest uppercase mb-6">Format: <span class="text-gold">CIPHER, Full Name</span></p>
+                    <textarea v-model="csvInput" rows="5" class="premium-input mb-6" placeholder="VIP1, John Smith&#10;VIP1, Jane Smith"></textarea>
+                    <div class="flex items-center gap-6">
+                        <button @click="importCSV" class="btn-gold">Execute Ritual</button>
+                        <span v-if="csvMessage" class="text-xs tracking-widest uppercase text-gold">{{ csvMessage }}</span>
+                    </div>
+                </div>
+
+                <div class="stationery-card p-8 md:p-12">
+                    <h3 class="font-gothic text-2xl text-gold mb-6">Inscribe Single Guest</h3>
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <input v-model="newGuestCode" type="text" placeholder="Cipher Code" class="premium-input md:w-1/3" />
+                        <input v-model="newGuestName" type="text" placeholder="Full Name" class="premium-input md:w-1/3" />
+                        <button @click="addGuest" class="btn-gold md:w-1/3">Inscribe</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: Menu -->
+            <div v-if="adminTab === 'menu'" class="space-y-8 animate-fade-in">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Form Pane -->
+                    <div class="stationery-card p-8 md:p-12">
+                        <h3 class="font-gothic text-2xl text-gold mb-6">Forge Menu Item</h3>
+                        <div class="space-y-6 mb-8">
+                            <input v-model="newMenu.name" type="text" placeholder="Dish Name (e.g. Midnight Beef)" class="premium-input" />
+                            <div class="relative">
+                                <span class="absolute left-5 top-1/2 -translate-y-1/2 text-[#7a6b7c] font-gothic text-xl">£</span>
+                                <input v-model="newMenu.cost" type="number" placeholder="Tribute per plate" class="premium-input pl-10" />
+                            </div>
+                            <input v-model="newMenu.tags" type="text" placeholder="Dietary Tags (e.g. GF, V)" class="premium-input" />
+                            <textarea v-model="newMenu.description" rows="3" placeholder="Craft an elegant description..." class="premium-input resize-none"></textarea>
+                        </div>
+                        <button @click="addMenu" class="btn-gold w-full">Add Offering</button>
+                    </div>
+
+                    <!-- Live Preview Pane -->
+                    <div class="stationery-card p-8 md:p-12 bg-black/60 flex flex-col justify-center">
+                        <h3 class="text-[0.65rem] font-semibold text-[#7a6b7c] uppercase tracking-[0.2em] mb-6 text-center">Guest Perspective (Live Preview)</h3>
+                        <div class="p-6 border border-gold bg-[#c5a059]/10 transition-all duration-500 flex flex-col items-center text-center shadow-lg shadow-black/50">
+                            <div class="flex items-center gap-3 mb-3">
+                                <h4 class="font-gothic text-2xl text-gold">{{ newMenu.name || 'Dish Name' }}</h4>
+                                <span v-if="newMenu.tags" class="border border-gold text-[0.55rem] px-2 py-1 tracking-widest uppercase text-[#a999a9]">{{ newMenu.tags }}</span>
+                            </div>
+                            <p class="text-sm text-[#a999a9] font-gothic italic tracking-wide leading-relaxed">{{ newMenu.description || 'A beautifully worded romantic description of the dish will appear here...' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <h3 class="font-gothic text-2xl text-parchment text-center mb-6 mt-4">Current Offerings</h3>
+                    <div v-for="item in menu" :key="item.id" class="stationery-card p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                        <div>
+                            <div class="flex items-center gap-4 mb-2">
+                                <h4 class="font-gothic text-2xl text-gold">{{ item.name }}</h4>
+                                <span class="border border-[#3c2441] text-[0.6rem] px-2 py-1 tracking-widest uppercase text-[#a999a9]">{{ item.tags }}</span>
+                            </div>
+                            <p class="text-sm text-parchment font-gothic italic tracking-wide mb-3">{{ item.description }}</p>
+                            <p class="text-gold text-xs tracking-widest uppercase font-semibold">Cost: £{{ parseFloat(item.cost).toFixed(2) }}</p>
+                        </div>
+                        <button @click="deleteMenu(item.id)" class="text-[0.65rem] font-semibold text-[#8b2e3b] hover:text-white uppercase tracking-[0.2em] px-4 py-2 border border-[#8b2e3b] hover:bg-[#8b2e3b] transition-colors duration-500">Banish</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: Settings -->
+            <div v-if="adminTab === 'settings'" class="stationery-card p-8 md:p-12 max-w-lg mx-auto animate-fade-in">
+                <h3 class="font-gothic text-2xl text-gold mb-2 text-center">Temporal Settings</h3>
+                <div class="gothic-divider w-1/2 mx-auto mb-6"></div>
+                <p class="text-[0.65rem] tracking-[0.2em] leading-loose text-[#a999a9] mb-8 text-center uppercase">Configure the deadline. Past this date, no mortal may alter their fate.</p>
+                
+                <label class="block text-[0.65rem] font-semibold text-gold uppercase tracking-[0.2em] mb-3">Deadline Date</label>
+                <input v-model="settings.lockDate" type="date" class="premium-input mb-8 text-center" />
+                
+                <button @click="saveSettings" class="btn-gold w-full">Seal Configuration</button>
+                <transition name="fade">
+                    <p v-if="settingsMessage" class="text-gold text-xs tracking-widest uppercase mt-6 text-center">{{ settingsMessage }}</p>
+                </transition>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="w-full text-center p-8 text-[#5a4b5c] text-[0.65rem] tracking-[0.3em] uppercase relative z-10 mt-auto">
+        <p class="mb-4">© 2024 Andrew & Samantha</p>
+        <button v-if="view === 'landing'" @click="view = 'admin-login'" class="hover:text-gold transition duration-500 font-medium">Sanctum Login</button>
+    </footer>
+
+</div>
+
+<script>
+    const { createApp } = Vue;
+
+    // --- SEED DATA ---
+    const defaultMenu = [
+        { id: 'm1', name: 'Braised Midnight Beef', description: 'Slow-cooked short rib served with a dark plum and black cherry reduction.', tags: 'GF', cost: 65.00 },
+        { id: 'm2', name: 'Nightshade Mushroom Risotto', description: 'Rich black truffle and aged parmesan arborio, finished with port wine.', tags: 'V, GF', cost: 45.00 },
+        { id: 'm3', name: 'Raven Sea Bass', description: 'Pan-seared sea bass accompanied by squid ink linguine and samphire.', tags: 'Pescatarian', cost: 55.00 }
+    ];
+
+    const defaultGuests = [
+        { id: 'g1', householdCode: 'VIP2024', name: 'Eleanor Vance', isAttending: null, mealId: null, allergies: '' },
+        { id: 'g2', householdCode: 'VIP2024', name: 'Theodora Vance', isAttending: null, mealId: null, allergies: '' },
+        { id: 'g3', householdCode: 'FAMILY1', name: 'Victor Frankenstein', isAttending: null, mealId: null, allergies: '' }
+    ];
+
+    const defaultSettings = { lockDate: '2026-12-31' };
+
+    createApp({
+        data() {
+            return {
+                view: 'landing', // landing, guest-portal, admin-login, admin-dashboard
+                loginCode: '',
+                loginError: '',
+                currentHouseholdCode: null,
+                saveMessage: '',
+                adminEmail: '',
+                adminPassword: '',
+                adminTab: 'analytics',
+                csvInput: '',
+                csvMessage: '',
+                newGuestCode: '',
+                newGuestName: '',
+                newMenu: { name: '', cost: '', tags: '', description: '' },
+                settingsMessage: '',
+                menu: [],
+                guests: [],
+                settings: {}
+            }
+        },
+        computed: {
+            currentHousehold() {
+                if(!this.currentHouseholdCode) return [];
+                return this.guests.filter(g => g.householdCode.toUpperCase() === this.currentHouseholdCode.toUpperCase());
+            },
+            primaryGuestName() {
+                return this.currentHousehold.length > 0 ? this.currentHousehold[0].name : 'Guest';
+            },
+            isLocked() {
+                if(!this.settings.lockDate) return false;
+                const lockTime = new Date(this.settings.lockDate);
+                if(isNaN(lockTime.getTime())) return false; 
+                lockTime.setHours(23, 59, 59, 999);
+                return new Date() > lockTime;
+            },
+            formattedLockDate() {
+                if(!this.settings.lockDate) return '';
+                return new Date(this.settings.lockDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+            },
+            attendingCount() { return this.guests.filter(g => g.isAttending === true).length; },
+            declinedCount() { return this.guests.filter(g => g.isAttending === false).length; },
+            mealCounts() {
+                const counts = {};
+                this.guests.forEach(g => {
+                    if (g.isAttending && g.mealId) { counts[g.mealId] = (counts[g.mealId] || 0) + 1; }
+                });
+                return counts;
+            },
+            grandTotalCost() {
+                let total = 0;
+                this.guests.forEach(g => {
+                    if(g.isAttending && g.mealId) {
+                        const meal = this.menu.find(m => m.id === g.mealId);
+                        if(meal) total += parseFloat(meal.cost);
+                    }
+                });
+                return total;
+            },
+            guestsWithAllergies() {
+                return this.guests.filter(g => g.isAttending && g.allergies && g.allergies.trim() !== '');
+            }
+        },
+        methods: {
+            loadData() {
+                // Incremented cache to v8 to flush old styling and menu states
+                const storedMenu = localStorage.getItem('wedding_menu_v8');
+                const storedGuests = localStorage.getItem('wedding_guests_v8');
+                const storedSettings = localStorage.getItem('wedding_settings_v8');
+
+                this.menu = storedMenu ? JSON.parse(storedMenu) : defaultMenu;
+                this.guests = storedGuests ? JSON.parse(storedGuests) : defaultGuests;
+                this.settings = storedSettings ? JSON.parse(storedSettings) : defaultSettings;
+                this.saveDb();
+            },
+            saveDb() {
+                localStorage.setItem('wedding_menu_v8', JSON.stringify(this.menu));
+                localStorage.setItem('wedding_guests_v8', JSON.stringify(this.guests));
+                localStorage.setItem('wedding_settings_v8', JSON.stringify(this.settings));
+            },
+            loginGuest() {
+                this.loginError = '';
+                const code = this.loginCode.trim().toUpperCase();
+                if(!code) return;
+
+                const found = this.guests.some(g => g.householdCode.toUpperCase() === code);
+                if (found) {
+                    this.currentHouseholdCode = code;
+                    this.view = 'guest-portal';
+                } else {
+                    this.loginError = 'Cipher not recognized. Check your invitation.';
+                }
+            },
+            saveRSVP() {
+                this.saveDb();
+                this.saveMessage = 'Your decisions have been etched in stone.';
+                setTimeout(() => { this.saveMessage = ''; }, 4000);
+            },
+            loginAdmin() {
+                this.loginError = '';
+                if (this.adminEmail === 'admin@wedding.com' && this.adminPassword === 'gothic24') {
+                    this.view = 'admin-dashboard';
+                } else {
+                    this.loginError = 'Invalid credentials provided.';
+                }
+            },
+            getMenuName(mealId) {
+                const meal = this.menu.find(m => m.id === mealId);
+                return meal ? meal.name : 'Unselected';
+            },
+            getMealCost(mealId) {
+                if(!mealId) return 0;
+                const meal = this.menu.find(m => m.id === mealId);
+                return meal ? parseFloat(meal.cost) : 0;
+            },
+            importCSV() {
+                if(!this.csvInput.trim()) return;
+                const lines = this.csvInput.split('\n');
+                let added = 0;
+                lines.forEach(line => {
+                    const parts = line.split(',');
+                    if (parts.length >= 2) {
+                        const code = parts[0].trim().toUpperCase();
+                        const name = parts[1].trim();
+                        if(code && name) {
+                            this.guests.push({
+                                id: 'g_' + Date.now() + Math.floor(Math.random() * 1000),
+                                householdCode: code, name: name, isAttending: null, mealId: null, allergies: ''
+                            });
+                            added++;
+                        }
+                    }
+                });
+                this.saveDb();
+                this.csvInput = '';
+                this.csvMessage = `Successfully summoned ${added} souls.`;
+                setTimeout(() => { this.csvMessage = ''; }, 3000);
+            },
+            addGuest() {
+                if(!this.newGuestCode || !this.newGuestName) return;
+                this.guests.push({
+                    id: 'g_' + Date.now(),
+                    householdCode: this.newGuestCode.trim().toUpperCase(), 
+                    name: this.newGuestName.trim(),
+                    isAttending: null, mealId: null, allergies: ''
+                });
+                this.saveDb();
+                this.newGuestCode = ''; this.newGuestName = '';
+            },
+            addMenu() {
+                if(!this.newMenu.name || !this.newMenu.cost) return;
+                this.menu.push({
+                    id: 'm_' + Date.now(),
+                    name: this.newMenu.name, cost: parseFloat(this.newMenu.cost),
+                    tags: this.newMenu.tags, description: this.newMenu.description
+                });
+                this.saveDb();
+                this.newMenu = { name: '', cost: '', tags: '', description: '' };
+            },
+            deleteMenu(id) {
+                if(confirm("Banish this menu offering permanently?")) {
+                    this.menu = this.menu.filter(m => m.id !== id);
+                    this.guests.forEach(g => { if(g.mealId === id) g.mealId = null; });
+                    this.saveDb();
+                }
+            },
+            saveSettings() {
+                this.saveDb();
+                this.settingsMessage = 'Temporal configuration sealed.';
+                setTimeout(() => { this.settingsMessage = ''; }, 3000);
+            },
+            logout() {
+                this.view = 'landing';
+                this.loginCode = ''; this.adminEmail = ''; this.adminPassword = ''; this.currentHouseholdCode = null;
+            }
+        },
+        mounted() {
+            this.loadData();
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>
